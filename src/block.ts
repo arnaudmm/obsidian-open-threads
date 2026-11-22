@@ -63,7 +63,7 @@ export class ThreadsBlock extends MarkdownRenderChild {
   /** Column labels, so the two dates can be told apart; the same grid as the rows. */
   private columns(parent: HTMLElement, showPerson: boolean): void {
     const head = parent.createDiv({ cls: `ot-row ot-cols${showPerson ? " ot-with-person" : ""}` });
-    for (const label of ["Thread", ...(showPerson ? ["With"] : []), "Status", "Priority", "Due", "Follow-up", ""]) {
+    for (const label of ["Thread", ...(showPerson ? ["With"] : []), "Status", "Due", "Follow-up", ""]) {
       head.createSpan({ cls: "ot-cell", text: label });
     }
   }
@@ -82,7 +82,6 @@ export class ThreadsBlock extends MarkdownRenderChild {
     const cell = (text: string, cls = "", tip = text) => row.createSpan({ cls: `ot-cell ${cls}`.trim(), text, attr: tip === "" ? {} : { title: tip } });
     if (showPerson) cell(r.person === "" ? "—" : r.person);
     cell(r.status, r.status === "blocked" ? "ot-blocked" : "");
-    cell(r.priority);
 
     if (r.due === null) cell("", "", "");
     else if (isOverdue(r, today)) cell(`${r.due} · ${daysLate(r, today)}d late`, "ot-overdue");

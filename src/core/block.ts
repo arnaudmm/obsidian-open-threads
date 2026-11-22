@@ -2,7 +2,7 @@
 // and the counts header. Pure.
 import { daysBetween } from "./dates.ts";
 import { followUpDue, isOpen, isOverdue, missingFollowUp, type Counts } from "./rules.ts";
-import { personName, PRIORITIES, type ThreadRecord } from "./thread.ts";
+import { personName, type ThreadRecord } from "./thread.ts";
 
 export const ALL = "all";
 export const VIEWS = ["open", "overdue", "followups", "done"] as const;
@@ -58,17 +58,11 @@ function inView(d: ThreadRecord, view: View, today: string): boolean {
   }
 }
 
-function priorityRank(p: string): number {
-  const i = PRIORITIES.indexOf(p as (typeof PRIORITIES)[number]);
-  return i === -1 ? PRIORITIES.length : PRIORITIES.length - 1 - i;
-}
-
 function compareOpen(today: string): (a: ThreadRecord, b: ThreadRecord) => number {
   const tier = (d: ThreadRecord) => (isOverdue(d, today) ? 0 : followUpDue(d, today) ? 1 : 2);
   return (a, b) =>
     tier(a) - tier(b) ||
     (a.due === b.due ? 0 : a.due === null ? 1 : b.due === null ? -1 : a.due < b.due ? -1 : 1) ||
-    priorityRank(a.priority) - priorityRank(b.priority) ||
     a.title.localeCompare(b.title);
 }
 

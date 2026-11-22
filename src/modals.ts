@@ -4,7 +4,7 @@ import { FuzzySuggestModal, Modal, Notice, Platform, SuggestModal, type App } fr
 import { addMonths, monthGrid, monthLabel, PRESETS, resolvePreset, typedDate } from "./core/dates.ts";
 import { activePeople, NO_PEOPLE, type Person } from "./core/people.ts";
 import type { ThreadValues } from "./actions.ts";
-import { PRIORITIES, STATUSES } from "./core/thread.ts";
+import { STATUSES } from "./core/thread.ts";
 
 /** Runs `resolve` once: on a choice, or with `undefined` after the modal closes without one. */
 function once<T>(resolve: (v: T | undefined) => void): { choose: (v: T) => void; dismiss: () => void } {
@@ -294,7 +294,7 @@ export class ThreadModal extends Modal {
       showPerson();
     };
 
-    const select = (label: string, options: readonly string[], key: "status" | "priority") => {
+    const select = (label: string, options: readonly string[], key: "status") => {
       const s = field(label).createEl("select", { cls: "dropdown" });
       // A value typed by hand that isn't in the list stays selectable, so saving never changes it silently.
       const all = options.includes(this.values[key]) ? options : [...options, this.values[key]];
@@ -303,7 +303,6 @@ export class ThreadModal extends Modal {
       s.onchange = () => (this.values[key] = s.value);
     };
     if (editing) select("Status", STATUSES, "status");
-    select("Priority", PRIORITIES, "priority");
 
     const dateBtn = (label: string, key: "due" | "followUp") => {
       const b = field(label).createEl("button");

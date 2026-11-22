@@ -5,7 +5,7 @@ import type { NewThread } from "../src/core/thread.ts";
 import { FakeStore } from "./fake-store.ts";
 
 const t = "2026-11-22";
-const d: NewThread = { title: "API", person: "Marc", priority: "normal", due: null, followUp: "2026-11-27", description: "" };
+const d: NewThread = { title: "API", person: "Marc", due: null, followUp: "2026-11-27", description: "" };
 
 test("createThread writes a note in the folder and logs creation", async () => {
   const s = new FakeStore();
@@ -59,14 +59,13 @@ test("setField logs only real changes", async () => {
   assert.equal(s.files.get("x")!.body, `## Log\n- ${t} · status todo → blocked\n- ${t} · with Marc → Ann\n`);
 });
 
-test("setField writes and clears dates, and treats a missing priority as normal", async () => {
+test("setField writes and clears dates", async () => {
   const s = new FakeStore();
   s.put("x", { type: "thread" }, "");
   assert.equal(await setField(s, "x", "follow-up", "2026-12-01", t), true);
   assert.equal(s.files.get("x")!.fm!.follow_up, "2026-12-01");
   assert.equal(await setField(s, "x", "follow-up", null, t), true);
   assert.equal("follow_up" in s.files.get("x")!.fm!, false);
-  assert.equal(await setField(s, "x", "priority", "normal", t), false);
   assert.equal(await setField(s, "x", "due", "2026-12-04", t), true);
   assert.equal(s.files.get("x")!.fm!.due, "2026-12-04");
   assert.equal(s.files.get("x")!.body,
@@ -77,10 +76,10 @@ const note = (s: FakeStore, p: string) => s.files.get(p)!;
 
 function seed(): FakeStore {
   const s = new FakeStore();
-  s.put("Threads/API.md", { type: "thread", with: "[[Marc]]", status: "todo", priority: "normal", due: "2026-12-04" }, "Old text\n\n## Log\n- 2026-11-20 · created · with Marc\n");
+  s.put("Threads/API.md", { type: "thread", with: "[[Marc]]", status: "todo", due: "2026-12-04" }, "Old text\n\n## Log\n- 2026-11-20 · created · with Marc\n");
   return s;
 }
-const before = { title: "API", person: "Marc", status: "todo", priority: "normal", due: "2026-12-04", followUp: null, description: "Old text" };
+const before = { title: "API", person: "Marc", status: "todo", due: "2026-12-04", followUp: null, description: "Old text" };
 
 test("editThread changes only what differs and logs each field", async () => {
   const s = seed();

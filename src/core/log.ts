@@ -6,7 +6,7 @@ const LOG_HEADING = /^##\s+Log\s*$/;
 const SECTION_END = /^#{1,2}\s/;
 const CLOSED = /^- (\d{4}-\d{2}-\d{2}) · status .* → (done|cancelled)\s*$/;
 
-export type Field = "status" | "priority" | "with" | "due" | "follow-up";
+export type Field = "status" | "with" | "due" | "follow-up";
 
 function oneLine(s: string): string {
   return s.replace(/\s*[\r\n]+\s*/g, " ").trim();

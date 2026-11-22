@@ -4,7 +4,7 @@ import { headerText, parseBlockSource, resolvePerson, selectRows } from "../src/
 import type { ThreadRecord } from "../src/core/thread.ts";
 
 const base: ThreadRecord = {
-  path: "p", title: "t", person: "Marc", status: "todo", priority: "normal",
+  path: "p", title: "t", person: "Marc", status: "todo",
   due: null, followUp: null, created: null, closedOn: null,
 };
 const today = "2026-11-20";
@@ -26,23 +26,18 @@ test("person defaults to the note's person, else everyone", () => {
   assert.equal(resolvePerson({ person: "Ann", view: "open" }, "Marc"), "Ann");
 });
 
-test("open rows sort overdue, then follow-up due, then due, priority, title", () => {
+test("open rows sort overdue, then follow-up due, then due date, then title", () => {
   const rows = [
     { ...base, title: "e", followUp: "2026-11-30" },
     { ...base, title: "c", followUp: "2026-11-30", due: "2026-11-25" },
-    { ...base, title: "d", followUp: "2026-11-30", due: "2026-11-25", priority: "critical" },
+    { ...base, title: "d", followUp: "2026-11-30", due: "2026-11-25" },
     { ...base, title: "b", followUp: "2026-11-19", due: "2026-12-01" },
-    { ...base, title: "a", due: "2026-11-10", priority: "low" },
+    { ...base, title: "a", due: "2026-11-10" },
     { ...base, title: "f", status: "done" },
     { ...base, title: "g", person: "Ann" },
   ];
-  assert.deepEqual(selectRows(rows, "marc", "open", today).map((r) => r.title), ["a", "b", "d", "c", "e"]);
+  assert.deepEqual(selectRows(rows, "marc", "open", today).map((r) => r.title), ["a", "b", "c", "d", "e"]);
   assert.equal(selectRows(rows, "all", "open", today).length, 6);
-});
-
-test("unknown priority sorts after low", () => {
-  const rows = [{ ...base, title: "x", priority: "urgent!" }, { ...base, title: "y", priority: "low" }];
-  assert.deepEqual(selectRows(rows, "all", "open", today).map((r) => r.title), ["y", "x"]);
 });
 
 test("overdue and followups views", () => {

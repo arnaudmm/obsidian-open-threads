@@ -38,12 +38,12 @@ test("readDate keeps the date part and rejects the rest", () => {
 test("readThread is lenient", () => {
   const r = readThread("D/x.md", "x", { type: "thread", with: "[[Marc]]", status: " Waiting ", due: "soon" });
   assert.deepEqual(r, {
-    path: "D/x.md", title: "x", person: "Marc", status: "Waiting", priority: "normal",
+    path: "D/x.md", title: "x", person: "Marc", status: "Waiting",
     due: null, followUp: null, created: null, closedOn: null,
   });
-  const s = readThread("p", "t", { type: "thread", status: "Blocked", priority: "HIGH", follow_up: "2026-11-27", created: "2026-11-01" });
+  const s = readThread("p", "t", { type: "thread", status: "Blocked", priority: "high", follow_up: "2026-11-27", created: "2026-11-01" });
   assert.equal(s.status, "blocked");
-  assert.equal(s.priority, "high");
+  assert.equal("priority" in s, false); // an old priority property is ignored
   assert.equal(s.followUp, "2026-11-27");
   assert.equal(s.created, "2026-11-01");
   assert.equal(readThread("p", "t", { type: "thread" }).status, "todo");
@@ -51,20 +51,20 @@ test("readThread is lenient", () => {
 
 test("renderThreadNote writes properties, description and the created line", () => {
   const note = renderThreadNote(
-    { title: "API", person: "Marc", priority: "high", due: "2026-12-04", followUp: null, description: " See https://x \n" },
+    { title: "API", person: "Marc", due: "2026-12-04", followUp: null, description: " See https://x \n" },
     "2026-11-22",
   );
   assert.equal(note, [
-    "---", "type: thread", 'with: "[[Marc]]"', "status: todo", "priority: high",
+    "---", "type: thread", 'with: "[[Marc]]"', "status: todo",
     "due: 2026-12-04", "created: 2026-11-22", "---",
     "See https://x", "", "## Log", "- 2026-11-22 · created · with Marc", "",
   ].join("\n"));
 });
 
 test("renderThreadNote with no description and a follow-up", () => {
-  const note = renderThreadNote({ title: "A", person: "Ann", priority: "normal", due: null, followUp: "2026-11-27", description: "" }, "2026-11-22");
+  const note = renderThreadNote({ title: "A", person: "Ann", due: null, followUp: "2026-11-27", description: "" }, "2026-11-22");
   assert.equal(note, [
-    "---", "type: thread", 'with: "[[Ann]]"', "status: todo", "priority: normal",
+    "---", "type: thread", 'with: "[[Ann]]"', "status: todo",
     "follow_up: 2026-11-27", "created: 2026-11-22", "---",
     "## Log", "- 2026-11-22 · created · with Ann", "",
   ].join("\n"));

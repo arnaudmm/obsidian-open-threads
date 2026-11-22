@@ -5,7 +5,6 @@ import { isValidDate } from "./dates.ts";
 export type Frontmatter = Record<string, unknown>;
 
 export const STATUSES = ["todo", "in_progress", "blocked", "done", "cancelled"] as const;
-export const PRIORITIES = ["low", "normal", "high", "critical"] as const;
 
 export interface ThreadRecord {
   path: string;
@@ -13,7 +12,6 @@ export interface ThreadRecord {
   /** The person's note name, or "" when none is set. */
   person: string;
   status: string;
-  priority: string;
   due: string | null;
   followUp: string | null;
   created: string | null;
@@ -24,7 +22,6 @@ export interface ThreadRecord {
 export interface NewThread {
   title: string;
   person: string;
-  priority: string;
   due: string | null;
   followUp: string | null;
   description: string;
@@ -67,7 +64,6 @@ export function readThread(path: string, title: string, fm: Frontmatter): Thread
     title,
     person: personName(fm.with),
     status: readEnum(fm.status, STATUSES, "todo"),
-    priority: readEnum(fm.priority, PRIORITIES, "normal"),
     due: readDate(fm.due),
     followUp: readDate(fm.follow_up),
     created: readDate(fm.created),
@@ -85,7 +81,6 @@ export function renderThreadNote(d: NewThread, today: string): string {
     "type: thread",
     `with: ${JSON.stringify(personLink(d.person))}`,
     "status: todo",
-    `priority: ${d.priority}`,
     ...(d.due === null ? [] : [`due: ${d.due}`]),
     ...(d.followUp === null ? [] : [`follow_up: ${d.followUp}`]),
     `created: ${today}`,

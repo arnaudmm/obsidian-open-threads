@@ -48,15 +48,13 @@ export async function checkIn(store: Store, path: string, note: string, next: st
   await store.editContent(path, (c) => appendLogLine(c, checkInLine(today, note, next)));
 }
 
-const KEYS: Record<Field, string> = { status: "status", priority: "priority", with: "with", due: "due", "follow-up": "follow_up" };
+const KEYS: Record<Field, string> = { status: "status", with: "with", due: "due", "follow-up": "follow_up" };
 
 function currentValue(fm: Frontmatter, field: Field): string | null {
   const r = readThread("", "", fm);
   switch (field) {
     case "status":
       return r.status;
-    case "priority":
-      return r.priority;
     case "with":
       return r.person === "" ? null : r.person;
     case "due":
@@ -101,7 +99,6 @@ export async function editThread(store: Store, path: string, before: ThreadValue
 
   const fields: [Field, string | null, string | null][] = [
     ["status", before.status, after.status],
-    ["priority", before.priority, after.priority],
     ["with", before.person, person],
     ["due", before.due, after.due],
     ["follow-up", before.followUp, after.followUp],

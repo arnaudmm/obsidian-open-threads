@@ -4,7 +4,7 @@ import { daysLate, followUpDue, isOpen, isOverdue, missingFollowUp, summarize } 
 import type { ThreadRecord } from "../src/core/thread.ts";
 
 const base: ThreadRecord = {
-  path: "p", title: "t", person: "Marc", status: "todo", priority: "normal",
+  path: "p", title: "t", person: "Marc", status: "todo",
   due: null, followUp: null, created: null, closedOn: null,
 };
 const today = "2026-11-20";

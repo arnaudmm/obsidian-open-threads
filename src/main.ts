@@ -59,7 +59,7 @@ export default class OpenThreadsPlugin extends Plugin {
     const person = active ? (this.index.personAt(active.path)?.name ?? "") : "";
     new ThreadModal(this.app, {
       mode: "create",
-      initial: { title: "", person, status: "todo", priority: "normal", due: null, followUp: null, description: "" },
+      initial: { title: "", person, status: "todo", due: null, followUp: null, description: "" },
       people: () => this.index.people(),
       today: this.today(),
       submit: async (d) => {
@@ -77,7 +77,7 @@ export default class OpenThreadsPlugin extends Plugin {
     const fm = (this.app.metadataCache.getFileCache(file)?.frontmatter ?? {}) as Frontmatter;
     const r = readThread(file.path, file.basename, fm);
     const initial: ThreadValues = {
-      title: r.title, person: r.person, status: r.status, priority: r.priority,
+      title: r.title, person: r.person, status: r.status,
       due: r.due, followUp: r.followUp, description: readDescription(await this.app.vault.read(file)),
     };
     new ThreadModal(this.app, {
