@@ -4,14 +4,16 @@ import { isValidDate } from "./dates.ts";
 
 export type Frontmatter = Record<string, unknown>;
 
-export const STATUSES = ["todo", "in_progress", "blocked", "done", "cancelled"] as const;
+export type Status = "open" | "closed";
+/** Status values that mean closed; every other value reads as open. */
+const CLOSED_STATUSES = ["closed", "done", "cancelled"];
 
 export interface ThreadRecord {
   path: string;
   title: string;
   /** The person's note name, or "" when none is set. */
   person: string;
-  status: string;
+  status: Status;
   due: string | null;
   followUp: string | null;
   created: string | null;
@@ -51,11 +53,8 @@ export function readDate(v: unknown): string | null {
   return isValidDate(d) ? d : null;
 }
 
-/** Known values are lower-cased; unknown ones are kept as typed; empty → fallback. */
-function readEnum(v: unknown, known: readonly string[], fallback: string): string {
-  if (typeof v !== "string" || v.trim() === "") return fallback;
-  const s = v.trim();
-  return known.includes(s.toLowerCase()) ? s.toLowerCase() : s;
+export function readStatus(v: unknown): Status {
+  return typeof v === "string" && CLOSED_STATUSES.includes(v.trim().toLowerCase()) ? "closed" : "open";
 }
 
 export function readThread(path: string, title: string, fm: Frontmatter): ThreadRecord {
@@ -63,7 +62,7 @@ export function readThread(path: string, title: string, fm: Frontmatter): Thread
     path,
     title,
     person: personName(fm.with),
-    status: readEnum(fm.status, STATUSES, "todo"),
+    status: readStatus(fm.status),
     due: readDate(fm.due),
     followUp: readDate(fm.follow_up),
     created: readDate(fm.created),
@@ -80,7 +79,7 @@ export function renderThreadNote(d: NewThread, today: string): string {
     "---",
     "type: thread",
     `with: ${JSON.stringify(personLink(d.person))}`,
-    "status: todo",
+    "status: open",
     ...(d.due === null ? [] : [`due: ${d.due}`]),
     ...(d.followUp === null ? [] : [`follow_up: ${d.followUp}`]),
     `created: ${today}`,

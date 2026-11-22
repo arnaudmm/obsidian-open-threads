@@ -5,8 +5,10 @@ import { followUpDue, isOpen, isOverdue, missingFollowUp, type Counts } from "./
 import { personName, type ThreadRecord } from "./thread.ts";
 
 export const ALL = "all";
-export const VIEWS = ["open", "overdue", "followups", "done"] as const;
+export const VIEWS = ["open", "overdue", "followups", "closed"] as const;
 export type View = (typeof VIEWS)[number];
+/** Older names still accepted. */
+const VIEW_ALIASES: Record<string, View> = { done: "closed" };
 
 export interface BlockSpec {
   /** A person's name, "all", or null when not given. */
@@ -28,8 +30,8 @@ export function parseBlockSource(src: string): BlockSpec | { error: string } {
     if (key === "with") {
       spec.person = value.toLowerCase() === ALL ? ALL : personName(value);
     } else if (key === "view") {
-      const v = value.toLowerCase();
-      if (!(VIEWS as readonly string[]).includes(v)) return { error: `Unknown view "${value}". Use open, overdue, followups or done.` };
+      const v = VIEW_ALIASES[value.toLowerCase()] ?? value.toLowerCase();
+      if (!(VIEWS as readonly string[]).includes(v)) return { error: `Unknown view "${value}". Use open, overdue, followups or closed.` };
       spec.view = v as View;
     } else {
       return { error: `Unknown option "${m[1].trim()}". Use with or view.` };
@@ -50,7 +52,7 @@ function inView(d: ThreadRecord, view: View, today: string): boolean {
       return isOverdue(d, today);
     case "followups":
       return followUpDue(d, today) || missingFollowUp(d);
-    case "done": {
+    case "closed": {
       if (isOpen(d) || d.closedOn === null) return false;
       const age = daysBetween(d.closedOn, today);
       return age >= 0 && age < DONE_DAYS;
@@ -69,7 +71,7 @@ function compareOpen(today: string): (a: ThreadRecord, b: ThreadRecord) => numbe
 export function selectRows(ds: ThreadRecord[], person: string, view: View, today: string): ThreadRecord[] {
   const who = person.toLowerCase();
   const rows = ds.filter((d) => (person === ALL || d.person.toLowerCase() === who) && inView(d, view, today));
-  if (view === "done") return rows.sort((a, b) => (b.closedOn as string).localeCompare(a.closedOn as string) || a.title.localeCompare(b.title));
+  if (view === "closed") return rows.sort((a, b) => (b.closedOn as string).localeCompare(a.closedOn as string) || a.title.localeCompare(b.title));
   return rows.sort(compareOpen(today));
 }
 

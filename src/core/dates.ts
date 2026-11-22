@@ -149,3 +149,8 @@ export function monthGrid(iso: string): (string | null)[][] {
 export function monthLabel(iso: string): string {
   return `${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
 }
+
+/** The dates a new thread starts with: due in 2 weeks, follow-up in 1 week, moved off the weekend like the presets. */
+export function newThreadDates(today: string): { due: string; followUp: string } {
+  return { due: shiftWeekend(addDays(today, 14)), followUp: shiftWeekend(addDays(today, 7)) };
+}

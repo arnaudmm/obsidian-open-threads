@@ -4,7 +4,8 @@
 const SEP = " · ";
 const LOG_HEADING = /^##\s+Log\s*$/;
 const SECTION_END = /^#{1,2}\s/;
-const CLOSED = /^- (\d{4}-\d{2}-\d{2}) · status .* → (done|cancelled)\s*$/;
+// "- DATE · closed", or an older "- DATE · status X → done|cancelled".
+const CLOSED = /^- (\d{4}-\d{2}-\d{2}) · (?:closed|status .* → (?:done|cancelled))\s*$/;
 
 export type Field = "status" | "with" | "due" | "follow-up";
 
@@ -18,6 +19,7 @@ export function checkInLine(date: string, note: string, next: string | null): st
 }
 
 export function changeLine(date: string, field: Field, from: string | null, to: string | null): string {
+  if (field === "status") return `- ${date}${SEP}${to === "closed" ? "closed" : "reopened"}`;
   return `- ${date}${SEP}${field} ${from ?? "none"} → ${to ?? "none"}`;
 }
 
@@ -56,7 +58,7 @@ export function appendLogLine(content: string, line: string): string {
   return lines.join(eol);
 }
 
-/** The date of the last "status X → done|cancelled" line, or null. */
+/** The date of the last closing line, or null. */
 export function lastClosedOn(content: string): string | null {
   let last: string | null = null;
   for (const l of content.split(/\r?\n/)) {

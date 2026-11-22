@@ -2,7 +2,7 @@
 // elsewhere, with the counts header and the overdue / follow-up flags.
 import { MarkdownRenderChild, setIcon } from "obsidian";
 import { ALL, headerText, parseBlockSource, resolvePerson, selectRows } from "./core/block.ts";
-import { daysLate, followUpDue, isOverdue, missingFollowUp, summarize } from "./core/rules.ts";
+import { followUpDue, isOverdue, missingFollowUp, summarize } from "./core/rules.ts";
 import type { ThreadRecord } from "./core/thread.ts";
 import type OpenThreadsPlugin from "./main.ts";
 
@@ -57,13 +57,13 @@ export class ThreadsBlock extends MarkdownRenderChild {
       return;
     }
     this.columns(el, person === ALL);
-    for (const r of rows) this.row(el, r, person === ALL, spec.view !== "done", today);
+    for (const r of rows) this.row(el, r, person === ALL, spec.view !== "closed", today);
   }
 
   /** Column labels, so the two dates can be told apart; the same grid as the rows. */
   private columns(parent: HTMLElement, showPerson: boolean): void {
     const head = parent.createDiv({ cls: `ot-row ot-cols${showPerson ? " ot-with-person" : ""}` });
-    for (const label of ["Thread", ...(showPerson ? ["With"] : []), "Status", "Due", "Follow-up", ""]) {
+    for (const label of ["Thread", ...(showPerson ? ["With"] : []), "Due", "Follow-up", ""]) {
       head.createSpan({ cls: "ot-cell", text: label });
     }
   }
@@ -81,11 +81,9 @@ export class ThreadsBlock extends MarkdownRenderChild {
 
     const cell = (text: string, cls = "", tip = text) => row.createSpan({ cls: `ot-cell ${cls}`.trim(), text, attr: tip === "" ? {} : { title: tip } });
     if (showPerson) cell(r.person === "" ? "—" : r.person);
-    cell(r.status, r.status === "blocked" ? "ot-blocked" : "");
 
     if (r.due === null) cell("", "", "");
-    else if (isOverdue(r, today)) cell(`${r.due} · ${daysLate(r, today)}d late`, "ot-overdue");
-    else cell(r.due);
+    else cell(r.due, isOverdue(r, today) ? "ot-overdue" : "");
 
     if (r.followUp !== null) cell(r.followUp, followUpDue(r, today) ? "ot-followup" : "");
     else if (missingFollowUp(r)) cell("none", "ot-followup ot-muted-warning", "No follow-up planned");
@@ -97,7 +95,7 @@ export class ThreadsBlock extends MarkdownRenderChild {
     edit.onclick = () => void this.plugin.editThreadAt(r.path);
     const check = actions.createEl("button", { cls: "clickable-icon ot-checkin", text: "..", attr: { "aria-label": "Check in" } });
     check.onclick = () => void this.plugin.runCheckIn(r.path);
-    // In the done view the button keeps its place, so the columns don't move.
+    // In the closed view the button keeps its place, so the columns don't move.
     if (!canCheckIn) check.addClass("ot-hidden");
   }
 }

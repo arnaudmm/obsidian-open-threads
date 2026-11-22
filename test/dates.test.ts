@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { addDays, addMonths, monthGrid, monthLabel, daysBetween, localDate, parseDate, PRESETS, resolvePreset, shiftWeekend, typedDate, weekday } from "../src/core/dates.ts";
+import { addDays, addMonths, monthGrid, monthLabel, newThreadDates, daysBetween, localDate, parseDate, PRESETS, resolvePreset, shiftWeekend, typedDate, weekday } from "../src/core/dates.ts";
 
 // 2026-11-20 is a Friday.
 
@@ -73,4 +73,9 @@ test("addMonths clamps to the target month's length", () => {
 
 test("monthLabel names the month", () => {
   assert.equal(monthLabel("2026-11-20"), "November 2026");
+});
+
+test("a new thread is due in 2 weeks, with a follow-up in 1 week, both off the weekend", () => {
+  assert.deepEqual(newThreadDates("2026-11-20"), { due: "2026-12-04", followUp: "2026-11-27" }); // Friday → Fridays
+  assert.deepEqual(newThreadDates("2026-11-21"), { due: "2026-12-07", followUp: "2026-11-30" }); // Saturday → Mondays
 });

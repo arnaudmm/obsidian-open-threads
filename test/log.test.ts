@@ -8,7 +8,8 @@ test("check-in lines have the spec's shape", () => {
 });
 
 test("change lines write none for an empty value", () => {
-  assert.equal(changeLine("2026-11-28", "status", "in_progress", "blocked"), "- 2026-11-28 · status in_progress → blocked");
+  assert.equal(changeLine("2026-11-28", "status", "open", "closed"), "- 2026-11-28 · closed");
+  assert.equal(changeLine("2026-11-28", "status", "closed", "open"), "- 2026-11-28 · reopened");
   assert.equal(changeLine("2026-11-28", "due", null, "2026-12-04"), "- 2026-11-28 · due none → 2026-12-04");
   assert.equal(changeLine("2026-11-28", "follow-up", "2026-12-01", null), "- 2026-11-28 · follow-up 2026-12-01 → none");
   assert.equal(changeLine("2026-11-28", "with", "Marc", "Ann"), "- 2026-11-28 · with Marc → Ann");
@@ -34,6 +35,7 @@ test("appendLogLine keeps a level-3 heading inside the section and CRLF endings"
 });
 
 test("lastClosedOn finds the last close", () => {
+  assert.equal(lastClosedOn("## Log\n- 2026-11-01 · closed\n- 2026-11-03 · reopened\n- 2026-11-07 · closed\n"), "2026-11-07");
   const c = "## Log\n- 2026-11-01 · status todo → done\n- 2026-11-03 · status done → todo\n- 2026-11-05 · status todo → cancelled\n";
   assert.equal(lastClosedOn(c), "2026-11-05");
   assert.equal(lastClosedOn("## Log\n- 2026-11-01 · created · with Marc\n"), null);

@@ -1,7 +1,7 @@
 import { Notice, Plugin, TFile } from "obsidian";
 import { checkIn, createThread, editThread, type ThreadValues } from "./actions.ts";
 import { ThreadsBlock } from "./block.ts";
-import { localDate } from "./core/dates.ts";
+import { localDate, newThreadDates } from "./core/dates.ts";
 import { isThread, readDescription, readThread, type Frontmatter, type ThreadRecord } from "./core/thread.ts";
 import { ThreadIndex } from "./index.ts";
 import { pickDate, PromptModal, ThreadModal } from "./modals.ts";
@@ -59,7 +59,7 @@ export default class OpenThreadsPlugin extends Plugin {
     const person = active ? (this.index.personAt(active.path)?.name ?? "") : "";
     new ThreadModal(this.app, {
       mode: "create",
-      initial: { title: "", person, status: "todo", due: null, followUp: null, description: "" },
+      initial: { title: "", person, status: "open", ...newThreadDates(this.today()), description: "" },
       people: () => this.index.people(),
       today: this.today(),
       submit: async (d) => {

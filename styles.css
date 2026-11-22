@@ -12,7 +12,7 @@
 .ot-row {
   /* Title takes what is left; the other columns have fixed widths so rows line up. */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 6.5em 10em 6.5em auto;
+  grid-template-columns: minmax(0, 1fr) 6.5em 6.5em auto;
   align-items: center;
   column-gap: var(--size-4-2);
   padding: var(--size-2-2) 0;
@@ -21,7 +21,7 @@
 }
 
 .ot-row.ot-with-person {
-  grid-template-columns: minmax(0, 1fr) 7em 6.5em 10em 6.5em auto;
+  grid-template-columns: minmax(0, 1fr) 7em 6.5em 6.5em auto;
 }
 
 .ot-cols {
@@ -63,10 +63,10 @@
 /* Phones: narrower columns so the line still fits. */
 @media (max-width: 500px) {
   .ot-row {
-    grid-template-columns: minmax(0, 1fr) 5.5em 8.5em 5.5em auto;
+    grid-template-columns: minmax(0, 1fr) 5.5em 5.5em auto;
   }
   .ot-row.ot-with-person {
-    grid-template-columns: minmax(0, 1fr) 5em 5.5em 8.5em 5.5em auto;
+    grid-template-columns: minmax(0, 1fr) 5em 5.5em 5.5em auto;
   }
 }
 
@@ -80,11 +80,6 @@
 
 .ot-muted-warning {
   font-style: italic;
-}
-
-.ot-blocked {
-  font-weight: var(--bold-weight);
-  color: var(--text-normal);
 }
 
 .ot-muted {

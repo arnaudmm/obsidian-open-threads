@@ -3,7 +3,7 @@ import { daysBetween } from "./dates.ts";
 import type { ThreadRecord } from "./thread.ts";
 
 export function isOpen(d: ThreadRecord): boolean {
-  return d.status !== "done" && d.status !== "cancelled";
+  return d.status !== "closed";
 }
 
 export function isOverdue(d: ThreadRecord, today: string): boolean {
@@ -27,18 +27,16 @@ export interface Counts {
   overdue: number;
   followUpsDue: number;
   noFollowUp: number;
-  blocked: number;
 }
 
 export function summarize(ds: ThreadRecord[], today: string): Counts {
-  const c: Counts = { open: 0, overdue: 0, followUpsDue: 0, noFollowUp: 0, blocked: 0 };
+  const c: Counts = { open: 0, overdue: 0, followUpsDue: 0, noFollowUp: 0 };
   for (const d of ds) {
     if (!isOpen(d)) continue;
     c.open++;
     if (isOverdue(d, today)) c.overdue++;
     if (followUpDue(d, today)) c.followUpsDue++;
     if (missingFollowUp(d)) c.noFollowUp++;
-    if (d.status === "blocked") c.blocked++;
   }
   return c;
 }

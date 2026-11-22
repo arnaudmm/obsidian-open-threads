@@ -12,13 +12,13 @@ It requires Obsidian 1.13 or later, and works on desktop and mobile.
 ## Use
 
 1. Add `type: person` to the properties of each person's note. Add `active: false` to hide someone from the pickers; their threads stay listed.
-2. Run **Open Threads: New thread** (bind it to a hotkey). Type what it's about, pick who it's with (already filled in when you run it from that person's note), and optionally a due date, a follow-up date and details. Press ⌘Enter (Ctrl+Enter) to save.
+2. Run **Open Threads: New thread** (bind it to a hotkey). Type what it's about, pick who it's with (already filled in when you run it from that person's note), and optionally details. It starts due in 2 weeks with a follow-up in 1 week (moved to Monday if that lands on a weekend); change or clear either date. Press ⌘Enter (Ctrl+Enter) to save.
 3. In each person's note, add a block once:
    ````
    ```threads
    ```
    ````
-   It lists what's open with that person. The header counts what's open, past its due date, due for a check-in, or has no follow-up planned. Each row fits on one line: the title (cut short when long), who it is with in an everyone list, status, due date, follow-up date, a pencil to edit and `..` to check in.
+   It lists what's open with that person. The header counts what's open, past its due date, due for a check-in, or has no follow-up planned. Each row fits on one line: the title (cut short when long), who it is with in an everyone list, due date (red when past), follow-up date, a pencil to edit and `..` to check in.
 4. For an overview across everyone, put a block in a home or weekly review note:
    ````
    ```threads
@@ -34,7 +34,7 @@ One `key: value` per line, both optional:
 | Option | Values | Default |
 |---|---|---|
 | `with` | `[[Name]]` or `all` | the note's person in a `type: person` note, else `all` |
-| `view` | `open`, `overdue`, `followups` (follow-up due or none planned), `done` (done or cancelled in the last 30 days) | `open` |
+| `view` | `open`, `overdue`, `followups` (follow-up due or none planned), `closed` (closed in the last 30 days; `done` also works) | `open` |
 
 For example, everything past its due date:
 
@@ -59,7 +59,7 @@ New threads go in the folder set in Settings → Open Threads (`Threads` by defa
 ---
 type: thread
 with: "[[Marc]]"
-status: todo
+status: open
 due: 2026-12-04
 follow_up: 2026-11-27
 created: 2026-11-22
@@ -69,12 +69,12 @@ Rate limiting on the public API. https://gitlab.com/acme/api/-/issues/12
 ## Log
 - 2026-11-22 · created · with Marc
 - 2026-11-25 · check-in · Waiting on infra · next 2026-11-28
-- 2026-11-28 · status in_progress → blocked
+- 2026-12-03 · closed
 ```
 
-- `status` is `todo`, `in_progress`, `blocked`, `done` or `cancelled`. Done and cancelled threads leave the lists (see `view: done`).
+- `status` is `open` or `closed`. Closed threads leave the lists (see `view: closed`). A `status` of `done` or `cancelled` also counts as closed; any other value counts as open.
 - Renaming a person's note updates `with` in their threads, as Obsidian does for every link.
-- Saving the edit window adds a line to `## Log` for each property that changed (status, person, dates). A new title renames the note; description changes aren't logged. Editing the properties by hand works too, but isn't logged.
+- Saving the edit window adds a line to `## Log` for each property that changed (closed or reopened, person, dates). A new title renames the note; description changes aren't logged. Editing the properties by hand works too, but isn't logged.
 
 ## Commands
 
@@ -83,7 +83,7 @@ Run them from the command palette (⌘P on macOS, Ctrl+P elsewhere). They have n
 | Command | What it does |
 |---|---|
 | **New thread** | Opens the window to create a thread. |
-| **Edit thread** | Opens the same window, filled in with the thread, plus its status. Save applies only what you changed. |
+| **Edit thread** | Opens the same window, filled in with the thread, plus a **Closed** checkbox. Save applies only what you changed. |
 | **Check in** | Asks for an optional one-line note, then the next follow-up date (or none). Logs the check-in. |
 
 ## Development

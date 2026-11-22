@@ -10,6 +10,7 @@ import {
   uniquePath,
   type Frontmatter,
   type NewThread,
+  type Status,
 } from "./core/thread.ts";
 
 export type { Field };
@@ -83,7 +84,7 @@ export async function setField(store: Store, path: string, field: Field, value: 
 
 /** What the edit window shows and returns. */
 export interface ThreadValues extends NewThread {
-  status: string;
+  status: Status;
 }
 
 /**

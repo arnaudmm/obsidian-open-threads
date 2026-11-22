@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkIn, createThread, DEFAULT_FOLDER, editThread, setField } from "../src/actions.ts";
+import { checkIn, createThread, DEFAULT_FOLDER, editThread, setField, type ThreadValues } from "../src/actions.ts";
 import type { NewThread } from "../src/core/thread.ts";
 import { FakeStore } from "./fake-store.ts";
 
@@ -51,12 +51,13 @@ test("checkIn with no next date clears follow_up", async () => {
 test("setField logs only real changes", async () => {
   const s = new FakeStore();
   s.put("x", { type: "thread", status: "todo", with: "[[Marc]]" }, "## Log\n");
-  assert.equal(await setField(s, "x", "status", "todo", t), false);
-  assert.equal(await setField(s, "x", "status", "blocked", t), true);
+  assert.equal(await setField(s, "x", "status", "open", t), false); // an old "todo" reads as open
+  assert.equal(await setField(s, "x", "status", "closed", t), true);
   assert.equal(await setField(s, "x", "with", "Ann", t), true);
   assert.equal(s.files.get("x")!.fm!.with, "[[Ann]]");
   assert.equal(await setField(s, "x", "due", null, t), false);
-  assert.equal(s.files.get("x")!.body, `## Log\n- ${t} · status todo → blocked\n- ${t} · with Marc → Ann\n`);
+  assert.equal(s.files.get("x")!.body, `## Log\n- ${t} · closed\n- ${t} · with Marc → Ann\n`);
+  assert.equal(s.files.get("x")!.fm!.status, "closed");
 });
 
 test("setField writes and clears dates", async () => {
@@ -79,16 +80,16 @@ function seed(): FakeStore {
   s.put("Threads/API.md", { type: "thread", with: "[[Marc]]", status: "todo", due: "2026-12-04" }, "Old text\n\n## Log\n- 2026-11-20 · created · with Marc\n");
   return s;
 }
-const before = { title: "API", person: "Marc", status: "todo", due: "2026-12-04", followUp: null, description: "Old text" };
+const before: ThreadValues = { title: "API", person: "Marc", status: "open", due: "2026-12-04", followUp: null, description: "Old text" };
 
 test("editThread changes only what differs and logs each field", async () => {
   const s = seed();
-  const p = await editThread(s, "Threads/API.md", before, { ...before, status: "blocked", due: null, followUp: "2026-11-27" }, t);
+  const p = await editThread(s, "Threads/API.md", before, { ...before, status: "closed", due: null, followUp: "2026-11-27" }, t);
   assert.equal(p, "Threads/API.md");
-  assert.equal(note(s, p).fm!.status, "blocked");
+  assert.equal(note(s, p).fm!.status, "closed");
   assert.equal("due" in note(s, p).fm!, false);
   assert.equal(note(s, p).fm!.follow_up, "2026-11-27");
-  assert.equal(note(s, p).body, `Old text\n\n## Log\n- 2026-11-20 · created · with Marc\n- ${t} · status todo → blocked\n- ${t} · due 2026-12-04 → none\n- ${t} · follow-up none → 2026-11-27\n`);
+  assert.equal(note(s, p).body, `Old text\n\n## Log\n- 2026-11-20 · created · with Marc\n- ${t} · closed\n- ${t} · due 2026-12-04 → none\n- ${t} · follow-up none → 2026-11-27\n`);
   assert.deepEqual(s.renames, []);
 });
 
