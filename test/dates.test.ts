@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { addDays, daysBetween, localDate, parseDate, PRESETS, resolvePreset, shiftWeekend, typedDate, weekday } from "../src/core/dates.ts";
+import { addDays, addMonths, monthGrid, monthLabel, daysBetween, localDate, parseDate, PRESETS, resolvePreset, shiftWeekend, typedDate, weekday } from "../src/core/dates.ts";
 
 // 2026-11-20 is a Friday.
 
@@ -55,4 +55,22 @@ test("typedDate ignores an empty field, so Enter never clears a date by accident
   assert.deepEqual(typedDate("none", "2026-11-20"), { date: null });
   assert.deepEqual(typedDate("fri", "2026-11-20"), { date: "2026-11-27" });
   assert.ok("error" in (typedDate("soon", "2026-11-20") ?? {}));
+});
+
+test("monthGrid lays out a month in Monday-first weeks, blanks outside it", () => {
+  const g = monthGrid("2026-11-20");
+  assert.equal(g.length, 6);
+  assert.deepEqual(g[0], [null, null, null, null, null, null, "2026-11-01"]); // Nov 1st 2026 is a Sunday
+  assert.deepEqual(g[5], ["2026-11-30", null, null, null, null, null, null]);
+  assert.equal(monthGrid("2027-02-10").length, 4); // Feb 2027 starts on a Monday, 28 days
+});
+
+test("addMonths clamps to the target month's length", () => {
+  assert.equal(addMonths("2026-01-31", 1), "2026-02-28");
+  assert.equal(addMonths("2026-12-15", 1), "2027-01-15");
+  assert.equal(addMonths("2026-01-15", -1), "2025-12-15");
+});
+
+test("monthLabel names the month", () => {
+  assert.equal(monthLabel("2026-11-20"), "November 2026");
 });

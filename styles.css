@@ -110,3 +110,58 @@
   gap: var(--size-4-2);
   margin-top: var(--size-4-3);
 }
+
+/* Calendar in the date picker */
+
+.ot-calendar {
+  margin-bottom: var(--size-4-3);
+}
+
+.ot-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--size-4-1);
+}
+
+.ot-cal-month {
+  font-weight: var(--font-semibold);
+}
+
+.ot-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--size-2-1);
+  max-width: 20em;
+  margin: 0 auto;
+}
+
+.ot-cal-wd {
+  text-align: center;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.ot-cal-day {
+  padding: var(--size-2-2) 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.ot-cal-day:hover {
+  background: var(--background-modifier-hover);
+}
+
+.ot-cal-past {
+  color: var(--text-faint);
+}
+
+.ot-cal-today {
+  font-weight: var(--bold-weight);
+  color: var(--text-accent);
+}
+
+.ot-cal-selected {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}

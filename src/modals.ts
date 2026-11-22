@@ -1,7 +1,7 @@
 // The new-thread window, the date picker, the person and value pickers, and a
 // one-line prompt. Each picker resolves to `undefined` when dismissed.
 import { FuzzySuggestModal, Modal, Notice, Platform, SuggestModal, type App } from "obsidian";
-import { PRESETS, resolvePreset, typedDate } from "./core/dates.ts";
+import { addMonths, monthGrid, monthLabel, PRESETS, resolvePreset, typedDate } from "./core/dates.ts";
 import { activePeople, NO_PEOPLE, type Person } from "./core/people.ts";
 import { PRIORITIES, type NewThread } from "./core/thread.ts";
 
@@ -53,6 +53,8 @@ class DateModal extends Modal {
       b.onclick = () => this.pick(date);
     }
 
+    this.renderCalendar(contentEl.createDiv({ cls: "ot-calendar" }), this.current ?? this.today);
+
     const input = contentEl.createEl("input", {
       type: "text",
       cls: "ot-date-input",
@@ -75,6 +77,34 @@ class DateModal extends Modal {
     const footer = contentEl.createDiv({ cls: "ot-footer" });
     footer.createEl("button", { text: "None" }).onclick = () => this.pick(null);
     input.focus();
+  }
+
+  /** A month of day buttons; ‹ and › change month. A clicked day is used as is (no weekend shift). */
+  private renderCalendar(el: HTMLElement, month: string): void {
+    el.empty();
+    const nav = el.createDiv({ cls: "ot-cal-nav" });
+    const prev = nav.createEl("button", { cls: "clickable-icon", text: "‹", attr: { "aria-label": "Previous month" } });
+    nav.createSpan({ cls: "ot-cal-month", text: monthLabel(month) });
+    const next = nav.createEl("button", { cls: "clickable-icon", text: "›", attr: { "aria-label": "Next month" } });
+    prev.onclick = () => this.renderCalendar(el, addMonths(month, -1));
+    next.onclick = () => this.renderCalendar(el, addMonths(month, 1));
+
+    const grid = el.createDiv({ cls: "ot-cal-grid" });
+    for (const d of ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]) grid.createSpan({ cls: "ot-cal-wd", text: d });
+    for (const week of monthGrid(month)) {
+      for (const day of week) {
+        if (day === null) {
+          grid.createSpan();
+          continue;
+        }
+        const cls = ["ot-cal-day"];
+        if (day === this.today) cls.push("ot-cal-today");
+        if (day === this.current) cls.push("ot-cal-selected");
+        if (day < this.today) cls.push("ot-cal-past");
+        const b = grid.createEl("button", { cls: cls.join(" "), text: String(Number(day.slice(8))), attr: { "aria-label": day } });
+        b.onclick = () => this.pick(day);
+      }
+    }
   }
 
   private pick(date: string | null): void {

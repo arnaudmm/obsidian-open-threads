@@ -49,7 +49,7 @@ Rows are sorted with past-due first, then those due for a check-in, then by due 
 
 ### Dates
 
-The date picker offers tomorrow, in 3 days, in 1 week, in 10 days and in 2 weeks. A choice that lands on a weekend moves to Monday. You can also type `2026-11-20`, `11-20`, `today`, `tomorrow`, `+3d`, `+1w`, a weekday (`fri`), or `none` to clear the date.
+The date picker offers tomorrow, in 3 days, in 1 week, in 10 days and in 2 weeks. A choice that lands on a weekend moves to Monday. Below them, a month calendar lets you click any day (‹ and › change month). You can also type `2026-11-20`, `11-20`, `today`, `tomorrow`, `+3d`, `+1w`, a weekday (`fri`), or `none` to clear the date.
 
 ## The note
 

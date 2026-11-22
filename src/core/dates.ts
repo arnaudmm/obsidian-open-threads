@@ -114,3 +114,38 @@ export function parseDate(input: string, today: string): ParsedDate {
 export function typedDate(input: string, today: string): ParsedDate | undefined {
   return input.trim() === "" ? undefined : parseDate(input, today);
 }
+
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/** Moves by n months, clamping the day to the target month's length. */
+export function addMonths(iso: string, n: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const total = y * 12 + (m - 1) + n;
+  const ty = Math.floor(total / 12);
+  const tm = total - ty * 12 + 1;
+  const last = new Date(Date.UTC(ty, tm, 0)).getUTCDate();
+  return `${pad(ty, 4)}-${pad(tm)}-${pad(Math.min(d, last))}`;
+}
+
+/** The weeks (Monday first) of the date's month; cells outside the month are null. */
+export function monthGrid(iso: string): (string | null)[][] {
+  const first = `${iso.slice(0, 7)}-01`;
+  const month = first.slice(0, 7);
+  const grid: (string | null)[][] = [];
+  let week: (string | null)[] = Array(7).fill(null);
+  let col = (weekday(first) + 6) % 7; // Monday = 0
+  for (let d = first; d.slice(0, 7) === month; d = addDays(d, 1)) {
+    week[col++] = d;
+    if (col === 7) {
+      grid.push(week);
+      week = Array(7).fill(null);
+      col = 0;
+    }
+  }
+  if (col > 0) grid.push(week);
+  return grid;
+}
+
+export function monthLabel(iso: string): string {
+  return `${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
+}
