@@ -36,11 +36,13 @@ export function isThread(fm: unknown): boolean {
 
 /** "[[People/Marc.md|M]]", "[[Marc]]", "Marc" or ["[[Marc]]"] → "Marc"; anything else → "". */
 export function personName(v: unknown): string {
-  const raw = Array.isArray(v) ? v[0] : v;
+  let raw = v;
+  // Unquoted [[Marc]] is YAML for a nested list: [["Marc"]].
+  while (Array.isArray(raw)) raw = raw[0];
   if (typeof raw !== "string") return "";
   let s = raw.trim();
   const link = /^\[\[([^\]]*)\]\]$/.exec(s);
-  if (link !== null) s = link[1].split("|")[0];
+  s = (link === null ? s : link[1]).split("|")[0];
   s = s.split("/").pop() ?? "";
   return s.replace(/\.md$/i, "").trim();
 }

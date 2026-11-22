@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { addDays, daysBetween, localDate, parseDate, PRESETS, resolvePreset, shiftWeekend, weekday } from "../src/core/dates.ts";
+import { addDays, daysBetween, localDate, parseDate, PRESETS, resolvePreset, shiftWeekend, typedDate, weekday } from "../src/core/dates.ts";
 
 // 2026-11-20 is a Friday.
 
@@ -47,4 +47,12 @@ test("date arithmetic crosses months and years", () => {
   assert.equal(addDays("2026-03-01", -1), "2026-02-28");
   assert.equal(daysBetween("2026-11-20", "2026-12-01"), 11);
   assert.equal(localDate(new Date(2026, 0, 5, 23, 30)), "2026-01-05");
+});
+
+test("typedDate ignores an empty field, so Enter never clears a date by accident", () => {
+  assert.equal(typedDate("", "2026-11-20"), undefined);
+  assert.equal(typedDate("   ", "2026-11-20"), undefined);
+  assert.deepEqual(typedDate("none", "2026-11-20"), { date: null });
+  assert.deepEqual(typedDate("fri", "2026-11-20"), { date: "2026-11-27" });
+  assert.ok("error" in (typedDate("soon", "2026-11-20") ?? {}));
 });

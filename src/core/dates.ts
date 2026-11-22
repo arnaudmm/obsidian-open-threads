@@ -109,3 +109,8 @@ export function parseDate(input: string, today: string): ParsedDate {
   }
   return bad;
 }
+
+/** What Enter in the date field does: `undefined` when nothing is typed (ignore), else the parse. Clearing needs "none". */
+export function typedDate(input: string, today: string): ParsedDate | undefined {
+  return input.trim() === "" ? undefined : parseDate(input, today);
+}

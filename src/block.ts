@@ -9,7 +9,7 @@ import type OpenThreadsPlugin from "./main.ts";
 export class ThreadsBlock extends MarkdownRenderChild {
   private readonly plugin: OpenThreadsPlugin;
   private readonly source: string;
-  private readonly sourcePath: string;
+  private sourcePath: string;
 
   constructor(containerEl: HTMLElement, plugin: OpenThreadsPlugin, source: string, sourcePath: string) {
     super(containerEl);
@@ -19,6 +19,13 @@ export class ThreadsBlock extends MarkdownRenderChild {
   }
 
   onload(): void {
+    // Renaming the open note does not re-run the block, so follow the new path
+    // (before the index re-renders, or a person note would show everyone).
+    this.registerEvent(
+      this.plugin.app.vault.on("rename", (file, oldPath) => {
+        if (oldPath === this.sourcePath) this.sourcePath = file.path;
+      }),
+    );
     this.registerEvent(this.plugin.index.on("updated", () => this.render()));
     this.render();
   }

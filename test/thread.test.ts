@@ -84,3 +84,8 @@ test("uniquePath appends a counter when the name is taken", () => {
   const lookup = caseInsensitiveLookup(["D/budget.md"]);
   assert.equal(uniquePath("D", "Budget", (p) => lookup(p) !== undefined), "D/Budget 2.md");
 });
+
+test("personName reads an unquoted [[Marc]], which YAML turns into a nested list", () => {
+  assert.equal(personName([["Marc"]]), "Marc");
+  assert.equal(personName([["People/Marc|M"]]), "Marc");
+});

@@ -1,7 +1,7 @@
 // The new-thread window, the date picker, the person and value pickers, and a
 // one-line prompt. Each picker resolves to `undefined` when dismissed.
 import { FuzzySuggestModal, Modal, Notice, Platform, SuggestModal, type App } from "obsidian";
-import { parseDate, PRESETS, resolvePreset } from "./core/dates.ts";
+import { PRESETS, resolvePreset, typedDate } from "./core/dates.ts";
 import { activePeople, NO_PEOPLE, type Person } from "./core/people.ts";
 import { PRIORITIES, type NewThread } from "./core/thread.ts";
 
@@ -60,16 +60,16 @@ class DateModal extends Modal {
     });
     const hint = contentEl.createDiv({ cls: "ot-muted ot-date-hint" });
     const update = () => {
-      const r = parseDate(input.value, this.today);
-      hint.toggleClass("ot-error", "error" in r);
-      hint.setText(input.value.trim() === "" ? "" : "error" in r ? r.error : r.date === null ? "No date" : r.date);
+      const r = typedDate(input.value, this.today);
+      hint.toggleClass("ot-error", r !== undefined && "error" in r);
+      hint.setText(r === undefined ? "" : "error" in r ? r.error : r.date === null ? "No date" : r.date);
     };
     input.addEventListener("input", update);
     input.addEventListener("keydown", (ev) => {
       if (ev.key !== "Enter" || ev.isComposing) return;
       ev.preventDefault();
-      const r = parseDate(input.value, this.today);
-      if (!("error" in r)) this.pick(r.date);
+      const r = typedDate(input.value, this.today);
+      if (r !== undefined && !("error" in r)) this.pick(r.date);
     });
 
     const footer = contentEl.createDiv({ cls: "ot-footer" });
