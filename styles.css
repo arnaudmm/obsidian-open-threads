@@ -1,0 +1,112 @@
+.ot-block {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  padding: var(--size-4-2) var(--size-4-3);
+}
+
+.ot-header {
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--size-4-1);
+}
+
+.ot-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--size-2-2) var(--size-4-2);
+  padding: var(--size-4-1) 0;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.ot-row:first-of-type {
+  border-top: none;
+}
+
+.ot-title {
+  flex: 1 1 12em;
+  min-width: 0;
+}
+
+.ot-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-2-2) var(--size-4-2);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.ot-checkin {
+  flex: none;
+}
+
+.ot-overdue {
+  color: var(--text-error);
+}
+
+.ot-followup {
+  color: var(--text-warning);
+}
+
+.ot-muted-warning {
+  font-style: italic;
+}
+
+.ot-blocked {
+  font-weight: var(--bold-weight);
+  color: var(--text-normal);
+}
+
+.ot-muted {
+  color: var(--text-muted);
+}
+
+.ot-error {
+  color: var(--text-error);
+}
+
+/* Modals */
+
+.ot-modal input[type="text"],
+.ot-modal textarea {
+  width: 100%;
+}
+
+.ot-fields {
+  display: grid;
+  gap: var(--size-4-2);
+  margin: var(--size-4-3) 0;
+}
+
+.ot-field {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.ot-label {
+  min-width: 6em;
+  color: var(--text-muted);
+}
+
+.ot-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
+}
+
+.ot-date-hint {
+  min-height: 1.5em;
+  margin-top: var(--size-2-2);
+}
+
+.ot-date-hint.ot-error {
+  color: var(--text-error);
+}
+
+.ot-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--size-4-2);
+  margin-top: var(--size-4-3);
+}

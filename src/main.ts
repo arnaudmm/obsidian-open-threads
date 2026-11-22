@@ -1,5 +1,6 @@
 import { Notice, Plugin, TFile } from "obsidian";
 import { checkIn, createThread, setField, type Field } from "./actions.ts";
+import { ThreadsBlock } from "./block.ts";
 import { localDate } from "./core/dates.ts";
 import { isThread, PRIORITIES, readThread, STATUSES, type Frontmatter, type ThreadRecord } from "./core/thread.ts";
 import { ThreadIndex } from "./index.ts";
@@ -40,6 +41,10 @@ export default class OpenThreadsPlugin extends Plugin {
     this.threadCommand("set-follow-up", "Set follow-up date", async (r) => {
       const v = await pickDate(this.app, "Follow-up date", r.followUp, this.today());
       if (v !== undefined) await this.change(r.path, "follow-up", v);
+    });
+
+    this.registerMarkdownCodeBlockProcessor("threads", (source, el, ctx) => {
+      ctx.addChild(new ThreadsBlock(el, this, source, ctx.sourcePath));
     });
 
     this.app.workspace.onLayoutReady(() => void this.index.build());
