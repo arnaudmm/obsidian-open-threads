@@ -1,0 +1,193 @@
+.ot-block {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  padding: var(--size-4-2) var(--size-4-3);
+}
+
+.ot-header {
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--size-4-1);
+}
+
+.ot-row {
+  /* Title takes what is left; the other columns have fixed widths so rows line up. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 6.5em 6.5em auto;
+  align-items: center;
+  column-gap: var(--size-4-2);
+  padding: var(--size-2-2) 0;
+  border-top: 1px solid var(--background-modifier-border);
+  font-size: var(--font-ui-small);
+}
+
+.ot-row.ot-with-person {
+  grid-template-columns: minmax(0, 1fr) 7em 6.5em 6.5em auto;
+}
+
+.ot-cols {
+  border-top: none;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.ot-cell {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ot-row-title {
+  font-size: var(--font-text-size);
+}
+
+.ot-actions {
+  display: flex;
+  gap: var(--size-2-1);
+  overflow: visible;
+}
+
+.ot-actions .clickable-icon {
+  padding: var(--size-2-1) var(--size-2-2);
+}
+
+.ot-checkin {
+  font-weight: var(--bold-weight);
+  letter-spacing: 0.1em;
+}
+
+.ot-hidden {
+  visibility: hidden;
+}
+
+/* Phones: narrower columns so the line still fits. */
+@media (max-width: 500px) {
+  .ot-row {
+    grid-template-columns: minmax(0, 1fr) 5.5em 5.5em auto;
+  }
+  .ot-row.ot-with-person {
+    grid-template-columns: minmax(0, 1fr) 5em 5.5em 5.5em auto;
+  }
+}
+
+.ot-overdue {
+  color: var(--text-error);
+}
+
+.ot-followup {
+  color: var(--text-warning);
+}
+
+.ot-muted-warning {
+  font-style: italic;
+}
+
+.ot-muted {
+  color: var(--text-muted);
+}
+
+.ot-error {
+  color: var(--text-error);
+}
+
+/* Modals */
+
+.ot-modal input[type="text"],
+.ot-modal textarea {
+  width: 100%;
+}
+
+.ot-fields {
+  display: grid;
+  gap: var(--size-4-2);
+  margin: var(--size-4-3) 0;
+}
+
+.ot-field {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.ot-label {
+  min-width: 6em;
+  color: var(--text-muted);
+}
+
+.ot-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
+}
+
+.ot-date-hint {
+  min-height: 1.5em;
+  margin-top: var(--size-2-2);
+}
+
+.ot-date-hint.ot-error {
+  color: var(--text-error);
+}
+
+.ot-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--size-4-2);
+  margin-top: var(--size-4-3);
+}
+
+/* Calendar in the date picker */
+
+.ot-calendar {
+  margin-bottom: var(--size-4-3);
+}
+
+.ot-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--size-4-1);
+}
+
+.ot-cal-month {
+  font-weight: var(--font-semibold);
+}
+
+.ot-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--size-2-1);
+  max-width: 20em;
+  margin: 0 auto;
+}
+
+.ot-cal-wd {
+  text-align: center;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.ot-cal-day {
+  padding: var(--size-2-2) 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.ot-cal-day:hover {
+  background: var(--background-modifier-hover);
+}
+
+.ot-cal-past {
+  color: var(--text-faint);
+}
+
+.ot-cal-today {
+  font-weight: var(--bold-weight);
+  color: var(--text-accent);
+}
+
+.ot-cal-selected {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}

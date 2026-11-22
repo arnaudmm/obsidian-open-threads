@@ -1,0 +1,9 @@
+{
+  "id": "open-threads",
+  "name": "Open Threads",
+  "version": "0.1.0",
+  "minAppVersion": "1.13.0",
+  "description": "Remember what's still open with each person: one note per thread, with due dates, follow-ups and check-ins, listed in their note.",
+  "author": "arnaudmm",
+  "isDesktopOnly": false
+}
