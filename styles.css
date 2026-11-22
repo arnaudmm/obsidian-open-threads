@@ -10,35 +10,67 @@
 }
 
 .ot-row {
-  display: flex;
-  flex-wrap: wrap;
+  /* Title takes what is left; the other columns have fixed widths so rows line up. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 6.5em 4.5em 10em 6.5em auto;
   align-items: center;
-  gap: var(--size-2-2) var(--size-4-2);
-  padding: var(--size-4-1) 0;
+  column-gap: var(--size-4-2);
+  padding: var(--size-2-2) 0;
   border-top: 1px solid var(--background-modifier-border);
-}
-
-.ot-row:first-of-type {
-  border-top: none;
-}
-
-.ot-row .ot-title {
-  flex: 1 1 12em;
-  min-width: 0;
-}
-
-.ot-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--size-2-2) var(--size-4-2);
   font-size: var(--font-ui-small);
+}
+
+.ot-row.ot-with-person {
+  grid-template-columns: minmax(0, 1fr) 7em 6.5em 4.5em 10em 6.5em auto;
+}
+
+.ot-cols {
+  border-top: none;
   color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.ot-cell {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ot-row-title {
+  font-size: var(--font-text-size);
 }
 
 .ot-actions {
   display: flex;
-  flex: none;
-  gap: var(--size-2-2);
+  gap: var(--size-2-1);
+  overflow: visible;
+}
+
+.ot-actions .clickable-icon {
+  padding: var(--size-2-1) var(--size-2-2);
+}
+
+.ot-checkin {
+  font-weight: var(--bold-weight);
+  letter-spacing: 0.1em;
+}
+
+.ot-hidden {
+  visibility: hidden;
+}
+
+/* Phones: keep one line by dropping the priority column. */
+@media (max-width: 500px) {
+  .ot-row {
+    grid-template-columns: minmax(0, 1fr) 5.5em 8.5em 5.5em auto;
+  }
+  .ot-row.ot-with-person {
+    grid-template-columns: minmax(0, 1fr) 5em 5.5em 8.5em 5.5em auto;
+  }
+  .ot-row > .ot-cell:nth-last-child(4) {
+    display: none;
+  }
 }
 
 .ot-overdue {

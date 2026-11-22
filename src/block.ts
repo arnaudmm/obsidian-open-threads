@@ -1,6 +1,6 @@
 // Renders a ```threads block: a person's threads in their note, or everyone's
 // elsewhere, with the counts header and the overdue / follow-up flags.
-import { MarkdownRenderChild } from "obsidian";
+import { MarkdownRenderChild, setIcon } from "obsidian";
 import { ALL, headerText, parseBlockSource, resolvePerson, selectRows } from "./core/block.ts";
 import { daysLate, followUpDue, isOverdue, missingFollowUp, summarize } from "./core/rules.ts";
 import type { ThreadRecord } from "./core/thread.ts";
@@ -52,13 +52,26 @@ export class ThreadsBlock extends MarkdownRenderChild {
     el.createDiv({ cls: "ot-header", text: headerText(person, summarize(selectRows(all, person, "open", today), today)) });
 
     const rows = selectRows(all, person, spec.view, today);
-    if (rows.length === 0) el.createDiv({ cls: "ot-muted", text: "Nothing here." });
+    if (rows.length === 0) {
+      el.createDiv({ cls: "ot-muted", text: "Nothing here." });
+      return;
+    }
+    this.columns(el, person === ALL);
     for (const r of rows) this.row(el, r, person === ALL, spec.view !== "done", today);
   }
 
+  /** Column labels, so the two dates can be told apart; the same grid as the rows. */
+  private columns(parent: HTMLElement, showPerson: boolean): void {
+    const head = parent.createDiv({ cls: `ot-row ot-cols${showPerson ? " ot-with-person" : ""}` });
+    for (const label of ["Thread", ...(showPerson ? ["With"] : []), "Status", "Priority", "Due", "Follow-up", ""]) {
+      head.createSpan({ cls: "ot-cell", text: label });
+    }
+  }
+
+  /** One line per thread; every cell is always there, empty or not, so the rows line up. */
   private row(parent: HTMLElement, r: ThreadRecord, showPerson: boolean, canCheckIn: boolean, today: string): void {
-    const row = parent.createDiv({ cls: "ot-row" });
-    const a = row.createEl("a", { cls: "internal-link ot-title", text: r.title, href: r.path });
+    const row = parent.createDiv({ cls: `ot-row${showPerson ? " ot-with-person" : ""}` });
+    const a = row.createEl("a", { cls: "internal-link ot-cell ot-row-title", text: r.title, href: r.path, attr: { title: r.title } });
     a.onclick = (ev) => {
       // Stop here, or Obsidian's own internal-link handler opens the note a second time.
       ev.preventDefault();
@@ -66,22 +79,26 @@ export class ThreadsBlock extends MarkdownRenderChild {
       void this.plugin.app.workspace.openLinkText(r.path, this.sourcePath, ev.ctrlKey || ev.metaKey);
     };
 
-    const meta = row.createDiv({ cls: "ot-meta" });
-    if (showPerson) meta.createSpan({ cls: "ot-person", text: r.person === "" ? "no one" : r.person });
-    meta.createSpan({ cls: `ot-status${r.status === "blocked" ? " ot-blocked" : ""}`, text: r.status });
-    meta.createSpan({ cls: "ot-priority", text: r.priority });
-    if (r.due !== null) {
-      const late = isOverdue(r, today);
-      meta.createSpan({ cls: late ? "ot-due ot-overdue" : "ot-due", text: `due ${r.due}${late ? ` · ${daysLate(r, today)}d late` : ""}` });
-    }
-    if (r.followUp !== null) {
-      meta.createSpan({ cls: followUpDue(r, today) ? "ot-follow ot-followup" : "ot-follow", text: `follow-up ${r.followUp}` });
-    } else if (missingFollowUp(r)) {
-      meta.createSpan({ cls: "ot-follow ot-followup ot-muted-warning", text: "no follow-up" });
-    }
+    const cell = (text: string, cls = "", tip = text) => row.createSpan({ cls: `ot-cell ${cls}`.trim(), text, attr: tip === "" ? {} : { title: tip } });
+    if (showPerson) cell(r.person === "" ? "—" : r.person);
+    cell(r.status, r.status === "blocked" ? "ot-blocked" : "");
+    cell(r.priority);
 
-    const actions = row.createDiv({ cls: "ot-actions" });
-    actions.createEl("button", { text: "Edit" }).onclick = () => void this.plugin.editThreadAt(r.path);
-    if (canCheckIn) actions.createEl("button", { text: "Check in" }).onclick = () => void this.plugin.runCheckIn(r.path);
+    if (r.due === null) cell("", "", "");
+    else if (isOverdue(r, today)) cell(`${r.due} · ${daysLate(r, today)}d late`, "ot-overdue");
+    else cell(r.due);
+
+    if (r.followUp !== null) cell(r.followUp, followUpDue(r, today) ? "ot-followup" : "");
+    else if (missingFollowUp(r)) cell("none", "ot-followup ot-muted-warning", "No follow-up planned");
+    else cell("", "", "");
+
+    const actions = row.createSpan({ cls: "ot-cell ot-actions" });
+    const edit = actions.createEl("button", { cls: "clickable-icon", attr: { "aria-label": "Edit" } });
+    setIcon(edit, "pencil");
+    edit.onclick = () => void this.plugin.editThreadAt(r.path);
+    const check = actions.createEl("button", { cls: "clickable-icon ot-checkin", text: "..", attr: { "aria-label": "Check in" } });
+    check.onclick = () => void this.plugin.runCheckIn(r.path);
+    // In the done view the button keeps its place, so the columns don't move.
+    if (!canCheckIn) check.addClass("ot-hidden");
   }
 }
