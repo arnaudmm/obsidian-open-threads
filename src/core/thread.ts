@@ -125,3 +125,28 @@ export function caseInsensitiveLookup(paths: Iterable<string>): (path: string) =
   for (const p of paths) byLower.set(p.toLowerCase(), p);
   return (path) => byLower.get(path.toLowerCase());
 }
+
+const FRONTMATTER = /^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/;
+const LOG_HEADING = /^##\s+Log\s*$/m;
+
+/** Splits a note into its properties block, the description, and the Log section onwards. */
+function splitNote(content: string): { head: string; description: string; log: string } {
+  const head = FRONTMATTER.exec(content)?.[0] ?? "";
+  const body = content.slice(head.length);
+  const m = LOG_HEADING.exec(body);
+  const at = m === null ? body.length : m.index;
+  return { head, description: body.slice(0, at), log: body.slice(at) };
+}
+
+/** The text between the properties and the "## Log" heading, trimmed. */
+export function readDescription(content: string): string {
+  return splitNote(content).description.trim();
+}
+
+/** Replaces that text, keeping the properties and the Log section as they are. */
+export function replaceDescription(content: string, text: string): string {
+  const { head, log } = splitNote(content);
+  const t = text.trim();
+  if (t === "") return head + log;
+  return `${head}${t}\n${log === "" ? "" : `\n${log}`}`;
+}

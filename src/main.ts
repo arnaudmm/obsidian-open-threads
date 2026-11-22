@@ -1,10 +1,10 @@
 import { Notice, Plugin, TFile } from "obsidian";
-import { checkIn, createThread, setField, type Field } from "./actions.ts";
+import { checkIn, createThread, editThread, type ThreadValues } from "./actions.ts";
 import { ThreadsBlock } from "./block.ts";
 import { localDate } from "./core/dates.ts";
-import { isThread, PRIORITIES, readThread, STATUSES, type Frontmatter, type ThreadRecord } from "./core/thread.ts";
+import { isThread, readDescription, readThread, type Frontmatter, type ThreadRecord } from "./core/thread.ts";
 import { ThreadIndex } from "./index.ts";
-import { NewThreadModal, pickDate, pickFrom, pickPerson, PromptModal } from "./modals.ts";
+import { pickDate, PromptModal, ThreadModal } from "./modals.ts";
 import { DEFAULT_SETTINGS, OpenThreadsSettingTab, type OpenThreadsSettings } from "./settings.ts";
 import { ObsidianStore } from "./store.ts";
 
@@ -21,27 +21,8 @@ export default class OpenThreadsPlugin extends Plugin {
     this.addSettingTab(new OpenThreadsSettingTab(this.app, this));
 
     this.addCommand({ id: "new", name: "New thread", callback: () => this.newThread() });
+    this.threadCommand("edit", "Edit thread", (r) => this.editThreadAt(r.path));
     this.threadCommand("check-in", "Check in", (r) => this.runCheckIn(r.path));
-    this.threadCommand("set-status", "Set status", async (r) => {
-      const v = await pickFrom(this.app, "Status", STATUSES);
-      if (v !== undefined) await this.change(r.path, "status", v);
-    });
-    this.threadCommand("set-priority", "Set priority", async (r) => {
-      const v = await pickFrom(this.app, "Priority", PRIORITIES);
-      if (v !== undefined) await this.change(r.path, "priority", v);
-    });
-    this.threadCommand("change-person", "Change person", async (r) => {
-      const v = await pickPerson(this.app, this.index.people());
-      if (v !== undefined) await this.change(r.path, "with", v);
-    });
-    this.threadCommand("set-due", "Set due date", async (r) => {
-      const v = await pickDate(this.app, "Due date", r.due, this.today());
-      if (v !== undefined) await this.change(r.path, "due", v);
-    });
-    this.threadCommand("set-follow-up", "Set follow-up date", async (r) => {
-      const v = await pickDate(this.app, "Follow-up date", r.followUp, this.today());
-      if (v !== undefined) await this.change(r.path, "follow-up", v);
-    });
 
     this.registerMarkdownCodeBlockProcessor("threads", (source, el, ctx) => {
       ctx.addChild(new ThreadsBlock(el, this, source, ctx.sourcePath));
@@ -73,21 +54,39 @@ export default class OpenThreadsPlugin extends Plugin {
     }
   }
 
-  private async change(path: string, field: Field, value: string | null): Promise<void> {
-    await setField(this.store, path, field, value, this.today());
-  }
-
   private newThread(): void {
     const active = this.app.workspace.getActiveFile();
     const person = active ? (this.index.personAt(active.path)?.name ?? "") : "";
-    new NewThreadModal(this.app, {
-      person,
+    new ThreadModal(this.app, {
+      mode: "create",
+      initial: { title: "", person, status: "todo", priority: "normal", due: null, followUp: null, description: "" },
       people: () => this.index.people(),
       today: this.today(),
       submit: async (d) => {
         const path = await createThread(this.store, this.settings.folder, d, this.today());
         const file = this.app.vault.getAbstractFileByPath(path);
         if (file instanceof TFile) await this.app.workspace.getLeaf(false).openFile(file);
+      },
+    }).open();
+  }
+
+  /** Open the thread in the edit window, filled with its current values. */
+  async editThreadAt(path: string): Promise<void> {
+    const file = this.app.vault.getAbstractFileByPath(path);
+    if (!(file instanceof TFile)) return;
+    const fm = (this.app.metadataCache.getFileCache(file)?.frontmatter ?? {}) as Frontmatter;
+    const r = readThread(file.path, file.basename, fm);
+    const initial: ThreadValues = {
+      title: r.title, person: r.person, status: r.status, priority: r.priority,
+      due: r.due, followUp: r.followUp, description: readDescription(await this.app.vault.read(file)),
+    };
+    new ThreadModal(this.app, {
+      mode: "edit",
+      initial,
+      people: () => this.index.people(),
+      today: this.today(),
+      submit: async (after) => {
+        await editThread(this.store, file.path, initial, after, this.today());
       },
     }).open();
   }

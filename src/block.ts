@@ -80,9 +80,8 @@ export class ThreadsBlock extends MarkdownRenderChild {
       meta.createSpan({ cls: "ot-follow ot-followup ot-muted-warning", text: "no follow-up" });
     }
 
-    if (canCheckIn) {
-      const b = row.createEl("button", { cls: "ot-checkin", text: "Check in" });
-      b.onclick = () => void this.plugin.runCheckIn(r.path);
-    }
+    const actions = row.createDiv({ cls: "ot-actions" });
+    actions.createEl("button", { text: "Edit" }).onclick = () => void this.plugin.editThreadAt(r.path);
+    if (canCheckIn) actions.createEl("button", { text: "Check in" }).onclick = () => void this.plugin.runCheckIn(r.path);
   }
 }

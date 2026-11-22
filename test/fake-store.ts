@@ -36,6 +36,14 @@ export class FakeStore implements Store {
     file.fm ??= {};
     fn(file.fm);
   }
+  renames: [string, string][] = [];
+  async rename(path: string, newPath: string): Promise<void> {
+    const file = this.files.get(path);
+    if (file === undefined) throw new Error(`missing: ${path}`);
+    this.files.delete(path);
+    this.files.set(newPath, file);
+    this.renames.push([path, newPath]);
+  }
   async editContent(path: string, fn: (content: string) => string): Promise<void> {
     const file = this.files.get(path);
     if (file === undefined) throw new Error(`missing: ${path}`);

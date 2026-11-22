@@ -5,8 +5,10 @@ import {
   isThread,
   personName,
   readDate,
+  readDescription,
   readThread,
   renderThreadNote,
+  replaceDescription,
   sanitizeTitle,
   uniquePath,
 } from "../src/core/thread.ts";
@@ -88,4 +90,19 @@ test("uniquePath appends a counter when the name is taken", () => {
 test("personName reads an unquoted [[Marc]], which YAML turns into a nested list", () => {
   assert.equal(personName([["Marc"]]), "Marc");
   assert.equal(personName([["People/Marc|M"]]), "Marc");
+});
+
+test("readDescription returns the text between the properties and the Log", () => {
+  assert.equal(readDescription("---\ntype: thread\n---\nSee https://x\nmore\n\n## Log\n- a\n"), "See https://x\nmore");
+  assert.equal(readDescription("---\ntype: thread\n---\n## Log\n- a\n"), "");
+  assert.equal(readDescription("No properties\n"), "No properties");
+  assert.equal(readDescription("---\na: 1\n---\nBody only\n"), "Body only");
+});
+
+test("replaceDescription keeps the properties and the Log", () => {
+  const note = "---\ntype: thread\n---\nOld\n\n## Log\n- a\n";
+  assert.equal(replaceDescription(note, " New\ntext "), "---\ntype: thread\n---\nNew\ntext\n\n## Log\n- a\n");
+  assert.equal(replaceDescription(note, ""), "---\ntype: thread\n---\n## Log\n- a\n");
+  assert.equal(replaceDescription("---\ntype: thread\n---\n## Log\n- a\n", "Added"), "---\ntype: thread\n---\nAdded\n\n## Log\n- a\n");
+  assert.equal(replaceDescription("---\na: 1\n---\nOld\n", "New"), "---\na: 1\n---\nNew\n");
 });

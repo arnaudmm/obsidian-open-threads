@@ -5,6 +5,7 @@ import {
   personLink,
   readThread,
   renderThreadNote,
+  replaceDescription,
   sanitizeTitle,
   uniquePath,
   type Frontmatter,
@@ -22,6 +23,8 @@ export interface Store {
   editFrontmatter(path: string, fn: (fm: Frontmatter) => void): Promise<void>;
   /** Rewrite the note's text (Obsidian: vault.process). */
   editContent(path: string, fn: (content: string) => string): Promise<void>;
+  /** Move or rename the note, updating links to it (Obsidian: fileManager.renameFile). */
+  rename(path: string, newPath: string): Promise<void>;
 }
 
 export const DEFAULT_FOLDER = "Threads";
@@ -78,4 +81,42 @@ export async function setField(store: Store, path: string, field: Field, value: 
   if (!changed) return false;
   await store.editContent(path, (c) => appendLogLine(c, changeLine(today, field, from, value)));
   return true;
+}
+
+/** What the edit window shows and returns. */
+export interface ThreadValues extends NewThread {
+  status: string;
+}
+
+/**
+ * Applies what changed between `before` and `after`: each property through
+ * setField (logged), the description (not logged), then the title as a rename
+ * in the same folder. Returns the note's path afterwards.
+ */
+export async function editThread(store: Store, path: string, before: ThreadValues, after: ThreadValues, today: string): Promise<string> {
+  const base = sanitizeTitle(after.title);
+  if (base === "") throw new Error("Title is empty.");
+  const person = after.person.trim();
+  if (person === "") throw new Error("Pick a person.");
+
+  const fields: [Field, string | null, string | null][] = [
+    ["status", before.status, after.status],
+    ["priority", before.priority, after.priority],
+    ["with", before.person, person],
+    ["due", before.due, after.due],
+    ["follow-up", before.followUp, after.followUp],
+  ];
+  for (const [field, from, to] of fields) if (from !== to) await setField(store, path, field, to, today);
+
+  if (after.description.trim() !== before.description.trim()) {
+    await store.editContent(path, (c) => replaceDescription(c, after.description));
+  }
+
+  if (base === sanitizeTitle(before.title)) return path;
+  const slash = path.lastIndexOf("/");
+  const folder = slash === -1 ? "" : path.slice(0, slash);
+  const self = path.toLowerCase();
+  const newPath = uniquePath(folder, base, (p) => p.toLowerCase() !== self && store.exists(p));
+  if (newPath !== path) await store.rename(path, newPath);
+  return newPath;
 }

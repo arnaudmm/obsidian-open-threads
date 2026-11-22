@@ -52,6 +52,10 @@ export class ObsidianStore implements Store {
   }
 
   /** Writes only when the text changes, so untouched notes keep their modified date. */
+  async rename(path: string, newPath: string): Promise<void> {
+    await this.app.fileManager.renameFile(this.file(path), normalizePath(newPath));
+  }
+
   async editContent(path: string, fn: (content: string) => string): Promise<void> {
     const file = this.file(path);
     const current = await this.app.vault.read(file);

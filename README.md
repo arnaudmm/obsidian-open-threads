@@ -18,7 +18,7 @@ It requires Obsidian 1.13 or later, and works on desktop and mobile.
    ```threads
    ```
    ````
-   It lists what's open with that person. The header counts what's open, past its due date, due for a check-in, or has no follow-up planned. Each row has a **Check in** button.
+   It lists what's open with that person. The header counts what's open, past its due date, due for a check-in, or has no follow-up planned. Each row has **Edit** and **Check in** buttons.
 4. For an overview across everyone, put a block in a home or weekly review note:
    ````
    ```threads
@@ -76,21 +76,17 @@ Rate limiting on the public API. https://gitlab.com/acme/api/-/issues/12
 - `status` is `todo`, `in_progress`, `blocked`, `done` or `cancelled`. Done and cancelled threads leave the lists (see `view: done`).
 - `priority` is `low`, `normal`, `high` or `critical`.
 - Renaming a person's note updates `with` in their threads, as Obsidian does for every link.
-- The commands add a line to `## Log` for each change. Editing the properties by hand works too, but isn't logged.
+- Saving the edit window adds a line to `## Log` for each property that changed (status, priority, person, dates). A new title renames the note; description changes aren't logged. Editing the properties by hand works too, but isn't logged.
 
 ## Commands
 
-Run them from the command palette (⌘P on macOS, Ctrl+P elsewhere). They have no default hotkeys: bind them in Settings → Hotkeys. All but **New thread** are available only when the open note is a thread.
+Run them from the command palette (⌘P on macOS, Ctrl+P elsewhere). They have no default hotkeys: bind them in Settings → Hotkeys. **Edit thread** and **Check in** are available only when the open note is a thread; the same actions are on each row of a `threads` block.
 
 | Command | What it does |
 |---|---|
 | **New thread** | Opens the window to create a thread. |
+| **Edit thread** | Opens the same window, filled in with the thread, plus its status. Save applies only what you changed. |
 | **Check in** | Asks for an optional one-line note, then the next follow-up date (or none). Logs the check-in. |
-| **Set status** | Picks one of the five statuses. |
-| **Set priority** | Picks one of the four priorities. |
-| **Change person** | Picks who the thread is with. |
-| **Set due date** | Opens the date picker. |
-| **Set follow-up date** | Opens the date picker. |
 
 ## Development
 

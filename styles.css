@@ -22,7 +22,7 @@
   border-top: none;
 }
 
-.ot-title {
+.ot-row .ot-title {
   flex: 1 1 12em;
   min-width: 0;
 }
@@ -35,8 +35,10 @@
   color: var(--text-muted);
 }
 
-.ot-checkin {
+.ot-actions {
+  display: flex;
   flex: none;
+  gap: var(--size-2-2);
 }
 
 .ot-overdue {

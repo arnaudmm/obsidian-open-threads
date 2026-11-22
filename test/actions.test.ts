@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkIn, createThread, DEFAULT_FOLDER, setField } from "../src/actions.ts";
+import { checkIn, createThread, DEFAULT_FOLDER, editThread, setField } from "../src/actions.ts";
 import type { NewThread } from "../src/core/thread.ts";
 import { FakeStore } from "./fake-store.ts";
 
@@ -71,4 +71,55 @@ test("setField writes and clears dates, and treats a missing priority as normal"
   assert.equal(s.files.get("x")!.fm!.due, "2026-12-04");
   assert.equal(s.files.get("x")!.body,
     `## Log\n- ${t} · follow-up none → 2026-12-01\n- ${t} · follow-up 2026-12-01 → none\n- ${t} · due none → 2026-12-04\n`);
+});
+
+const note = (s: FakeStore, p: string) => s.files.get(p)!;
+
+function seed(): FakeStore {
+  const s = new FakeStore();
+  s.put("Threads/API.md", { type: "thread", with: "[[Marc]]", status: "todo", priority: "normal", due: "2026-12-04" }, "Old text\n\n## Log\n- 2026-11-20 · created · with Marc\n");
+  return s;
+}
+const before = { title: "API", person: "Marc", status: "todo", priority: "normal", due: "2026-12-04", followUp: null, description: "Old text" };
+
+test("editThread changes only what differs and logs each field", async () => {
+  const s = seed();
+  const p = await editThread(s, "Threads/API.md", before, { ...before, status: "blocked", due: null, followUp: "2026-11-27" }, t);
+  assert.equal(p, "Threads/API.md");
+  assert.equal(note(s, p).fm!.status, "blocked");
+  assert.equal("due" in note(s, p).fm!, false);
+  assert.equal(note(s, p).fm!.follow_up, "2026-11-27");
+  assert.equal(note(s, p).body, `Old text\n\n## Log\n- 2026-11-20 · created · with Marc\n- ${t} · status todo → blocked\n- ${t} · due 2026-12-04 → none\n- ${t} · follow-up none → 2026-11-27\n`);
+  assert.deepEqual(s.renames, []);
+});
+
+test("editThread with nothing changed writes nothing", async () => {
+  const s = seed();
+  const bodyBefore = note(s, "Threads/API.md").body;
+  assert.equal(await editThread(s, "Threads/API.md", before, { ...before }, t), "Threads/API.md");
+  assert.equal(note(s, "Threads/API.md").body, bodyBefore);
+});
+
+test("editThread rewrites the description without logging it", async () => {
+  const s = seed();
+  await editThread(s, "Threads/API.md", before, { ...before, description: "New text" }, t);
+  assert.equal(note(s, "Threads/API.md").body, "New text\n\n## Log\n- 2026-11-20 · created · with Marc\n");
+});
+
+test("editThread renames the note for a new title, in the same folder, avoiding clashes", async () => {
+  const s = seed();
+  s.put("Threads/Rate limits.md", { type: "thread" }, "");
+  const p = await editThread(s, "Threads/API.md", before, { ...before, title: "Rate limits?" }, t);
+  assert.equal(p, "Threads/Rate limits 2.md");
+  assert.deepEqual(s.renames, [["Threads/API.md", "Threads/Rate limits 2.md"]]);
+});
+
+test("editThread allows a change of case only", async () => {
+  const s = seed();
+  assert.equal(await editThread(s, "Threads/API.md", before, { ...before, title: "Api" }, t), "Threads/Api.md");
+});
+
+test("editThread refuses an empty title or person", async () => {
+  await assert.rejects(editThread(seed(), "Threads/API.md", before, { ...before, title: " / " }, t), /Title is empty/);
+  await assert.rejects(editThread(seed(), "Threads/API.md", before, { ...before, person: "" }, t), /Pick a person/);
 });

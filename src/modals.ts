@@ -3,7 +3,8 @@
 import { FuzzySuggestModal, Modal, Notice, Platform, SuggestModal, type App } from "obsidian";
 import { addMonths, monthGrid, monthLabel, PRESETS, resolvePreset, typedDate } from "./core/dates.ts";
 import { activePeople, NO_PEOPLE, type Person } from "./core/people.ts";
-import { PRIORITIES, type NewThread } from "./core/thread.ts";
+import type { ThreadValues } from "./actions.ts";
+import { PRIORITIES, STATUSES } from "./core/thread.ts";
 
 /** Runs `resolve` once: on a choice, or with `undefined` after the modal closes without one. */
 function once<T>(resolve: (v: T | undefined) => void): { choose: (v: T) => void; dismiss: () => void } {
@@ -245,32 +246,36 @@ export class PromptModal extends Modal {
   }
 }
 
-// ── New thread ─────────────────────────────────────────────────────────────
+// ── New and edit thread ────────────────────────────────────────────────────
 
-export interface NewThreadOptions {
-  person: string;
+export interface ThreadModalOptions {
+  mode: "create" | "edit";
+  initial: ThreadValues;
   people: () => Person[];
   today: string;
-  submit: (d: NewThread) => Promise<void>;
+  submit: (values: ThreadValues) => Promise<void>;
 }
 
-export class NewThreadModal extends Modal {
-  private readonly opts: NewThreadOptions;
-  private values: NewThread;
+/** The same window creates a thread or edits one; editing adds the status. */
+export class ThreadModal extends Modal {
+  private readonly opts: ThreadModalOptions;
+  private values: ThreadValues;
   private saving = false;
 
-  constructor(app: App, opts: NewThreadOptions) {
+  constructor(app: App, opts: ThreadModalOptions) {
     super(app);
     this.opts = opts;
-    this.values = { title: "", person: opts.person, priority: "normal", due: null, followUp: null, description: "" };
+    this.values = { ...opts.initial };
   }
 
   onOpen(): void {
     const { contentEl } = this;
+    const editing = this.opts.mode === "edit";
     this.modalEl.addClass("ot-modal");
-    this.titleEl.setText("New thread");
+    this.titleEl.setText(editing ? "Edit thread" : "New thread");
 
-    const title = contentEl.createEl("input", { type: "text", cls: "ot-title", attr: { placeholder: "What is it about?" } });
+    const title = contentEl.createEl("input", { type: "text", cls: "ot-title-input", attr: { placeholder: "What is it about?" } });
+    title.value = this.values.title;
     title.addEventListener("input", () => (this.values.title = title.value));
 
     const grid = contentEl.createDiv({ cls: "ot-fields" });
@@ -289,10 +294,16 @@ export class NewThreadModal extends Modal {
       showPerson();
     };
 
-    const prio = field("Priority").createEl("select", { cls: "dropdown" });
-    for (const p of PRIORITIES) prio.createEl("option", { text: p, value: p });
-    prio.value = this.values.priority;
-    prio.onchange = () => (this.values.priority = prio.value);
+    const select = (label: string, options: readonly string[], key: "status" | "priority") => {
+      const s = field(label).createEl("select", { cls: "dropdown" });
+      // A value typed by hand that isn't in the list stays selectable, so saving never changes it silently.
+      const all = options.includes(this.values[key]) ? options : [...options, this.values[key]];
+      for (const o of all) s.createEl("option", { text: o, value: o });
+      s.value = this.values[key];
+      s.onchange = () => (this.values[key] = s.value);
+    };
+    if (editing) select("Status", STATUSES, "status");
+    select("Priority", PRIORITIES, "priority");
 
     const dateBtn = (label: string, key: "due" | "followUp") => {
       const b = field(label).createEl("button");
@@ -307,7 +318,8 @@ export class NewThreadModal extends Modal {
     dateBtn("Due", "due");
     dateBtn("Follow-up", "followUp");
 
-    const desc = contentEl.createEl("textarea", { cls: "ot-description", attr: { placeholder: "Details and links (optional)", rows: "3" } });
+    const desc = contentEl.createEl("textarea", { cls: "ot-description", attr: { placeholder: "Details and links (optional)", rows: "4" } });
+    desc.value = this.values.description;
     desc.addEventListener("input", () => (this.values.description = desc.value));
 
     const footer = contentEl.createDiv({ cls: "ot-footer" });
@@ -321,7 +333,7 @@ export class NewThreadModal extends Modal {
     title.focus();
   }
 
-  /** One save at a time: a double click or key repeat must not create the thread twice. */
+  /** One save at a time: a double click or key repeat must not save twice. */
   private async save(): Promise<void> {
     if (this.saving) return;
     this.saving = true;
