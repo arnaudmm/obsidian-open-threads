@@ -135,10 +135,15 @@ The first time:
 
 After that:
 
+Merge the pull request first, then release from `main`:
+
 ```sh
+git checkout main && git pull
 npm version patch   # or minor / major; 1.0.0-beta.1 style versions become pre-releases
 git push --follow-tags
 ```
+
+`npm version` refuses to run on any other branch (`release-check.mjs`), so a release tag never points at a branch commit.
 
 `npm version` updates the version in `package.json` and `manifest.json` and adds it to `versions.json`, with the `minAppVersion` it needs. It then commits the change and creates the tag. Pushing the tag runs `.github/workflows/release.yml`, which checks that the tag matches the manifest, runs `npm run verify`, and creates the release.
 
