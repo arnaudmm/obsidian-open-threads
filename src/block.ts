@@ -61,18 +61,10 @@ export class ThreadsBlock extends MarkdownRenderChild {
       el.createDiv({ cls: "ot-muted", text: "Nothing here." });
       return;
     }
-    this.columns(el, person === ALL);
     for (const r of rows) this.row(el, r, person === ALL, spec.view !== "closed", today);
   }
 
   /** Column labels, so the two dates can be told apart; the same grid as the rows. */
-  private columns(parent: HTMLElement, showPerson: boolean): void {
-    const head = parent.createDiv({ cls: `ot-row ot-cols${showPerson ? " ot-with-person" : ""}` });
-    for (const label of ["Thread", ...(showPerson ? ["With"] : []), "Due", "Follow-up", ""]) {
-      head.createSpan({ cls: "ot-cell", text: label });
-    }
-  }
-
   /** One line per thread; every cell is always there, empty or not, so the rows line up. */
   private row(parent: HTMLElement, r: ThreadRecord, showPerson: boolean, canCheckIn: boolean, today: string): void {
     const row = parent.createDiv({ cls: `ot-row${showPerson ? " ot-with-person" : ""}` });
@@ -88,9 +80,9 @@ export class ThreadsBlock extends MarkdownRenderChild {
     if (showPerson) cell(r.person === "" ? "—" : r.person);
 
     if (r.due === null) cell("", "", "");
-    else cell(r.due, isOverdue(r, today) ? "ot-overdue" : "");
+    else cell(r.due, isOverdue(r, today) ? "ot-overdue" : "", `Due ${r.due}`);
 
-    if (r.followUp !== null) cell(r.followUp, followUpDue(r, today) ? "ot-followup" : "");
+    if (r.followUp !== null) cell(r.followUp, followUpDue(r, today) ? "ot-followup" : "", `Follow-up ${r.followUp}`);
     else if (missingFollowUp(r)) cell("none", "ot-followup ot-muted-warning", "No follow-up planned");
     else cell("", "", "");
 

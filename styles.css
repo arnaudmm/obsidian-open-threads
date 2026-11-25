@@ -35,12 +35,6 @@
   grid-template-columns: minmax(0, 1fr) 7em 6.5em 6.5em auto;
 }
 
-.ot-cols {
-  border-top: none;
-  color: var(--text-muted);
-  font-size: var(--font-ui-smaller);
-}
-
 .ot-cell {
   min-width: 0;
   overflow: hidden;
