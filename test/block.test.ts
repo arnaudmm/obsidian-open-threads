@@ -20,6 +20,13 @@ test("options parse and report errors", () => {
   assert.deepEqual(parseBlockSource("just text"), { error: 'Expected "key: value", got "just text".' });
 });
 
+test("options take quotes, # comments and Name or [[Name]], the same way as Talking Points' agenda block", () => {
+  assert.deepEqual(parseBlockSource('With: "Marc"   # my 1:1\n# a comment line\nview: \'overdue\''), { person: "Marc", view: "overdue" });
+  assert.deepEqual(parseBlockSource("with: [[People/Marc|Marc D.]]"), { person: "Marc", view: "open" });
+  assert.deepEqual(parseBlockSource("with: ALL # everyone"), { person: "all", view: "open" });
+  assert.deepEqual(parseBlockSource("with:"), { person: null, view: "open" });
+});
+
 test("person defaults to the note's person, else everyone", () => {
   assert.equal(resolvePerson({ person: null, view: "open" }, "Marc"), "Marc");
   assert.equal(resolvePerson({ person: null, view: "open" }, null), "all");

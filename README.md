@@ -29,11 +29,11 @@ It requires Obsidian 1.13 or later, and works on desktop and mobile.
 
 ### Block options
 
-One `key: value` per line, both optional:
+One `key: value` per line, both optional. Quotes around a value and `# comments` are fine. The options work as in Talking Points' `agenda` block:
 
 | Option | Values | Default |
 |---|---|---|
-| `with` | `[[Name]]` or `all` | the note's person in a `type: person` note, else `all` |
+| `with` | `[[Name]]`, `Name` or `all` | the note's person in a `type: person` note, else `all` |
 | `view` | `open`, `overdue`, `followups` (follow-up due or none planned), `closed` (closed in the last 30 days; `done` also works) | `open` |
 
 For example, everything past its due date:
