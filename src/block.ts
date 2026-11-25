@@ -49,7 +49,12 @@ export class ThreadsBlock extends MarkdownRenderChild {
     const today = this.plugin.today();
     const person = resolvePerson(spec, index.personAt(this.sourcePath)?.name ?? null);
     const all = index.threads();
-    el.createDiv({ cls: "ot-header", text: headerText(person, summarize(selectRows(all, person, "open", today), today)) });
+    const header = el.createDiv({ cls: "ot-header" });
+    header.createSpan({ text: headerText(person, summarize(selectRows(all, person, "open", today), today)) });
+    const add = header.createEl("button", { cls: "ot-new", text: "New", attr: { "aria-label": "New thread" } });
+    // The block's person, in their note's spelling; an overview block starts with nobody.
+    const known = index.people().find((p) => p.name.toLowerCase() === person.toLowerCase());
+    add.onclick = () => this.plugin.newThread(person === ALL ? "" : (known?.name ?? ""));
 
     const rows = selectRows(all, person, spec.view, today);
     if (rows.length === 0) {

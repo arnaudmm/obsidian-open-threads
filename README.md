@@ -18,7 +18,7 @@ It requires Obsidian 1.13 or later, and works on desktop and mobile.
    ```threads
    ```
    ````
-   It lists what's open with that person. The header counts what's open, past its due date, due for a check-in, or has no follow-up planned. Each row fits on one line: the title (cut short when long), who it is with in an everyone list, due date (red when past), follow-up date, a pencil to edit and `..` to check in.
+   It lists what's open with that person. The header counts what's open, past its due date, due for a check-in, or has no follow-up planned, and its **New** button starts a thread with that person. Each row fits on one line: the title (cut short when long), who it is with in an everyone list, due date (red when past), follow-up date, a pencil to edit and `..` to check in.
 4. For an overview across everyone, put a block in a home or weekly review note:
    ````
    ```threads

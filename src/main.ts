@@ -54,9 +54,12 @@ export default class OpenThreadsPlugin extends Plugin {
     }
   }
 
-  private newThread(): void {
-    const active = this.app.workspace.getActiveFile();
-    const person = active ? (this.index.personAt(active.path)?.name ?? "") : "";
+  /** `person`: who to start with (a block's person); otherwise the current note's person, if any. */
+  newThread(person?: string): void {
+    if (person === undefined) {
+      const active = this.app.workspace.getActiveFile();
+      person = active ? (this.index.personAt(active.path)?.name ?? "") : "";
+    }
     new ThreadModal(this.app, {
       mode: "create",
       initial: { title: "", person, status: "open", ...newThreadDates(this.today()), description: "" },
