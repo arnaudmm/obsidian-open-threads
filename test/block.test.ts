@@ -71,6 +71,6 @@ test("closed lists closes from the last 30 days, newest first", () => {
 });
 
 test("header leaves out zero counts", () => {
-  assert.equal(headerText("Marc", { open: 4, overdue: 1, followUpsDue: 2, noFollowUp: 1 }), "Marc · 4 open · 1 overdue · 2 follow-ups due · 1 no follow-up");
-  assert.equal(headerText("all", { open: 0, overdue: 0, followUpsDue: 0, noFollowUp: 0 }), "Everyone · 0 open");
+  assert.equal(headerText("Marc", { open: 4, overdue: 1, followUpsDue: 2, noFollowUp: 1 }), "Open Threads · Marc · 4 open · 1 overdue · 2 follow-ups due · 1 no follow-up");
+  assert.equal(headerText("all", { open: 0, overdue: 0, followUpsDue: 0, noFollowUp: 0 }), "Open Threads · Everyone · 0 open");
 });

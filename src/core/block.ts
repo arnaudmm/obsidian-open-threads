@@ -90,7 +90,7 @@ export function selectRows(ds: ThreadRecord[], person: string, view: View, today
 }
 
 export function headerText(scope: string, c: Counts): string {
-  const parts = [scope === ALL ? "Everyone" : scope, `${c.open} open`];
+  const parts = ["Open Threads", scope === ALL ? "Everyone" : scope, `${c.open} open`];
   if (c.overdue > 0) parts.push(`${c.overdue} overdue`);
   if (c.followUpsDue > 0) parts.push(`${c.followUpsDue} follow-up${c.followUpsDue === 1 ? "" : "s"} due`);
   if (c.noFollowUp > 0) parts.push(`${c.noFollowUp} no follow-up`);
