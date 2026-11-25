@@ -19,6 +19,8 @@ export interface ThreadRecord {
   created: string | null;
   /** When it was last set to done or cancelled; filled by the index. */
   closedOn: string | null;
+  /** The note given when it was last closed, or "". */
+  closedNote: string;
 }
 
 export interface NewThread {
@@ -67,6 +69,7 @@ export function readThread(path: string, title: string, fm: Frontmatter): Thread
     followUp: readDate(fm.follow_up),
     created: readDate(fm.created),
     closedOn: null,
+    closedNote: "",
   };
 }
 

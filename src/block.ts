@@ -10,6 +10,7 @@ export class ThreadsBlock extends MarkdownRenderChild {
   private readonly plugin: OpenThreadsPlugin;
   private readonly source: string;
   private sourcePath: string;
+  private showDone = false;
 
   constructor(containerEl: HTMLElement, plugin: OpenThreadsPlugin, source: string, sourcePath: string) {
     super(containerEl);
@@ -56,25 +57,58 @@ export class ThreadsBlock extends MarkdownRenderChild {
     const known = index.people().find((p) => p.name.toLowerCase() === person.toLowerCase());
     add.onclick = () => this.plugin.newThread(person === ALL ? "" : (known?.name ?? ""));
 
+    const closedView = spec.view === "closed";
     const rows = selectRows(all, person, spec.view, today);
-    if (rows.length === 0) {
-      el.createDiv({ cls: "ot-muted", text: "Nothing here." });
-      return;
-    }
-    for (const r of rows) this.row(el, r, person === ALL, spec.view !== "closed", today);
+    if (rows.length === 0) el.createDiv({ cls: "ot-muted", text: "Nothing here." });
+    for (const r of rows) this.row(el, r, person === ALL, !closedView, today);
+    if (!closedView) this.renderDone(el, selectRows(all, person, "closed", today), person === ALL);
   }
 
-  /** Column labels, so the two dates can be told apart; the same grid as the rows. */
-  /** One line per thread; every cell is always there, empty or not, so the rows line up. */
-  private row(parent: HTMLElement, r: ThreadRecord, showPerson: boolean, canCheckIn: boolean, today: string): void {
-    const row = parent.createDiv({ cls: `ot-row${showPerson ? " ot-with-person" : ""}` });
-    const a = row.createEl("a", { cls: "internal-link ot-cell ot-row-title", text: r.title, href: r.path, attr: { title: r.title } });
+  /** "Show done": the threads closed in the last 30 days, newest first, with their closing note. */
+  private renderDone(el: HTMLElement, rows: ThreadRecord[], showPerson: boolean): void {
+    const toggle = el.createEl("a", { cls: "ot-toggle", text: this.showDone ? "Hide done" : "Show done (last 30 days)" });
+    toggle.onclick = () => {
+      this.showDone = !this.showDone;
+      this.render();
+    };
+    if (!this.showDone) return;
+    if (rows.length === 0) el.createDiv({ cls: "ot-muted", text: "Nothing closed in the last 30 days." });
+    for (const r of rows) {
+      const line = el.createDiv({ cls: "ot-done" });
+      line.appendText(`${r.closedOn ?? ""} · ${showPerson && r.person !== "" ? `${r.person} · ` : ""}`);
+      this.link(line, r);
+      if (r.closedNote !== "") line.appendText(` · ${r.closedNote}`);
+    }
+  }
+
+  private link(parent: HTMLElement, r: ThreadRecord, cls = ""): HTMLElement {
+    const a = parent.createEl("a", { cls: `internal-link ${cls}`.trim(), text: r.title, href: r.path, attr: { title: r.title } });
     a.onclick = (ev) => {
       // Stop here, or Obsidian's own internal-link handler opens the note a second time.
       ev.preventDefault();
       ev.stopPropagation();
       void this.plugin.app.workspace.openLinkText(r.path, this.sourcePath, ev.ctrlKey || ev.metaKey);
     };
+    return a;
+  }
+
+  /** One line per thread; every cell is always there, empty or not, so the rows line up. */
+  private row(parent: HTMLElement, r: ThreadRecord, showPerson: boolean, canCheckIn: boolean, today: string): void {
+    const row = parent.createDiv({ cls: `ot-row${showPerson ? " ot-with-person" : ""}` });
+    // Tick to close, as in Talking Points. In the closed view the box keeps its place, so the columns don't move.
+    const box = row.createEl("input", { type: "checkbox", cls: "ot-close", attr: { "aria-label": "Close" } });
+    if (!canCheckIn) {
+      box.checked = true;
+      box.addClass("ot-hidden");
+    }
+    box.onchange = async () => {
+      if (!box.checked) return;
+      box.disabled = true;
+      if (await this.plugin.closeThreadAt(r.path, r.title)) return;
+      box.checked = false;
+      box.disabled = false;
+    };
+    this.link(row, r, "ot-cell ot-row-title");
 
     const cell = (text: string, cls = "", tip = text) => row.createSpan({ cls: `ot-cell ${cls}`.trim(), text, attr: tip === "" ? {} : { title: tip } });
     if (showPerson) cell(r.person === "" ? "—" : r.person);

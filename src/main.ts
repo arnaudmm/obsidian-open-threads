@@ -1,5 +1,5 @@
 import { Notice, Plugin, TFile } from "obsidian";
-import { checkIn, createThread, editThread, type ThreadValues } from "./actions.ts";
+import { checkIn, closeThread, createThread, editThread, type ThreadValues } from "./actions.ts";
 import { ThreadsBlock } from "./block.ts";
 import { localDate, newThreadDates } from "./core/dates.ts";
 import { isThread, readDescription, readThread, type Frontmatter, type ThreadRecord } from "./core/thread.ts";
@@ -102,6 +102,19 @@ export default class OpenThreadsPlugin extends Plugin {
     const next = await pickDate(this.app, "Next follow-up", current, this.today());
     if (next === undefined) return;
     await this.guard(checkIn(this.store, path, note, next, this.today()));
+  }
+
+  /** Ask for an optional note, then close the thread; false when cancelled or it failed. */
+  async closeThreadAt(path: string, title: string): Promise<boolean> {
+    const note = await PromptModal.ask(this.app, `Close: ${title}`, "Note (optional): Enter to close, Esc to cancel");
+    if (note === null) return false;
+    try {
+      await closeThread(this.store, path, note, this.today());
+      return true;
+    } catch (e) {
+      new Notice(e instanceof Error ? e.message : String(e));
+      return false;
+    }
   }
 
   async loadSettings(): Promise<void> {

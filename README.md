@@ -18,7 +18,7 @@ It requires Obsidian 1.13 or later, and works on desktop and mobile.
    ```threads
    ```
    ````
-   It lists what's open with that person. The header counts what's open, past its due date, due for a check-in, or has no follow-up planned, and its **New** button starts a thread with that person. Each row fits on one line: the title (cut short when long), who it is with in an everyone list, due date (red when past), follow-up date (hover a date to see which it is), a pencil to edit and `..` to check in.
+   It lists what's open with that person. The header counts what's open, past its due date, due for a check-in, or has no follow-up planned, and its **New** button starts a thread with that person. Each row fits on one line: a box to tick when it's done, the title (cut short when long), who it is with in an everyone list, due date (red when past), follow-up date (hover a date to see which it is), a pencil to edit and `..` to check in. Ticking the box asks for an optional note and closes the thread. **Show done** lists what was closed in the last 30 days, with its note.
 4. For an overview across everyone, put a block in a home or weekly review note:
    ````
    ```threads
@@ -69,10 +69,10 @@ Rate limiting on the public API. https://gitlab.com/acme/api/-/issues/12
 ## Log
 - 2026-11-22 · created · with Marc
 - 2026-11-25 · check-in · Waiting on infra · next 2026-11-28
-- 2026-12-03 · closed
+- 2026-12-03 · closed · sent the slides
 ```
 
-- `status` is `open` or `closed`. Closed threads leave the lists (see `view: closed`). A `status` of `done` or `cancelled` also counts as closed; any other value counts as open.
+- `status` is `open` or `closed`. Closed threads leave the lists (see **Show done** and `view: closed`). A `status` of `done` or `cancelled` also counts as closed; any other value counts as open.
 - Renaming a person's note updates `with` in their threads, as Obsidian does for every link.
 - Saving the edit window adds a line to `## Log` for each property that changed (closed or reopened, person, dates). A new title renames the note; description changes aren't logged. Editing the properties by hand works too, but isn't logged.
 

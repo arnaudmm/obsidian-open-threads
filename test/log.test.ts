@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { appendLogLine, changeLine, checkInLine, lastClosedOn } from "../src/core/log.ts";
+import { appendLogLine, changeLine, checkInLine, closeLine, lastClose, lastClosedOn } from "../src/core/log.ts";
 
 test("check-in lines have the spec's shape", () => {
   assert.equal(checkInLine("2026-11-25", "Waiting\non infra ", "2026-11-28"), "- 2026-11-25 · check-in · Waiting on infra · next 2026-11-28");
@@ -40,4 +40,18 @@ test("lastClosedOn finds the last close", () => {
   assert.equal(lastClosedOn(c), "2026-11-05");
   assert.equal(lastClosedOn("## Log\n- 2026-11-01 · created · with Marc\n"), null);
   assert.equal(lastClosedOn("## Log\r\n- 2026-11-02 · status blocked → done\r\n"), "2026-11-02");
+});
+
+test("closeLine adds the note when there is one", () => {
+  assert.equal(closeLine("2026-11-25", "done · thanks"), "- 2026-11-25 · closed · done · thanks");
+  assert.equal(closeLine("2026-11-25", "  "), "- 2026-11-25 · closed");
+});
+
+test("lastClose reads the date and the note of the last close", () => {
+  const c = "## Log\n- 2026-11-01 · closed · first\n- 2026-11-03 · reopened\n- 2026-11-07 · closed · sent · thanks\n";
+  assert.deepEqual(lastClose(c), { date: "2026-11-07", note: "sent · thanks" });
+  assert.equal(lastClosedOn(c), "2026-11-07");
+  assert.deepEqual(lastClose("## Log\n- 2026-11-01 · closed\n"), { date: "2026-11-01", note: "" });
+  assert.deepEqual(lastClose("## Log\n- 2026-11-05 · status todo → done\n"), { date: "2026-11-05", note: "" });
+  assert.equal(lastClose("## Log\n- 2026-11-01 · created · with Marc\n"), null);
 });

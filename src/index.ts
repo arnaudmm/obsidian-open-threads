@@ -3,7 +3,7 @@
 // re-render on its "updated" event.
 import { Events, TFile, type App, type CachedMetadata, type Plugin } from "obsidian";
 import { localDate } from "./core/dates.ts";
-import { lastClosedOn } from "./core/log.ts";
+import { lastClose } from "./core/log.ts";
 import { toPerson, type Person } from "./core/people.ts";
 import { isOpen } from "./core/rules.ts";
 import { isThread, readThread, type Frontmatter, type ThreadRecord } from "./core/thread.ts";
@@ -101,6 +101,10 @@ export class ThreadIndex extends Events {
 
 function toRecord(file: TFile, fm: Frontmatter, content: string): ThreadRecord {
   const r = readThread(file.path, file.basename, fm);
-  if (!isOpen(r)) r.closedOn = lastClosedOn(content) ?? localDate(new Date(file.stat.mtime));
+  if (!isOpen(r)) {
+    const close = lastClose(content);
+    r.closedOn = close?.date ?? localDate(new Date(file.stat.mtime));
+    r.closedNote = close?.note ?? "";
+  }
   return r;
 }

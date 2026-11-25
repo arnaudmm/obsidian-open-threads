@@ -40,7 +40,7 @@ test("readThread is lenient", () => {
   // Any old status other than done or cancelled reads as open.
   assert.deepEqual(r, {
     path: "D/x.md", title: "x", person: "Marc", status: "open",
-    due: null, followUp: null, created: null, closedOn: null,
+    due: null, followUp: null, created: null, closedOn: null, closedNote: "",
   });
   const s = readThread("p", "t", { type: "thread", status: "Cancelled", priority: "high", follow_up: "2026-11-27", created: "2026-11-01" });
   assert.equal(s.status, "closed");

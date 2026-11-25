@@ -4,8 +4,8 @@
 const SEP = " · ";
 const LOG_HEADING = /^##\s+Log\s*$/;
 const SECTION_END = /^#{1,2}\s/;
-// "- DATE · closed", or an older "- DATE · status X → done|cancelled".
-const CLOSED = /^- (\d{4}-\d{2}-\d{2}) · (?:closed|status .* → (?:done|cancelled))\s*$/;
+// "- DATE · closed[ · note]", or an older "- DATE · status X → done|cancelled".
+const CLOSED = /^- (\d{4}-\d{2}-\d{2}) · (?:closed(?: · (.*?))?|status .* → (?:done|cancelled))\s*$/;
 
 export type Field = "status" | "with" | "due" | "follow-up";
 
@@ -16,6 +16,11 @@ function oneLine(s: string): string {
 export function checkInLine(date: string, note: string, next: string | null): string {
   const n = oneLine(note);
   return `- ${date}${SEP}check-in${n === "" ? "" : `${SEP}${n}`}${SEP}next ${next ?? "none"}`;
+}
+
+export function closeLine(date: string, note: string): string {
+  const n = oneLine(note);
+  return `- ${date}${SEP}closed${n === "" ? "" : `${SEP}${n}`}`;
 }
 
 export function changeLine(date: string, field: Field, from: string | null, to: string | null): string {
@@ -58,12 +63,17 @@ export function appendLogLine(content: string, line: string): string {
   return lines.join(eol);
 }
 
-/** The date of the last closing line, or null. */
-export function lastClosedOn(content: string): string | null {
-  let last: string | null = null;
+/** The date and note of the last closing line, or null. */
+export function lastClose(content: string): { date: string; note: string } | null {
+  let last: { date: string; note: string } | null = null;
   for (const l of content.split(/\r?\n/)) {
     const m = CLOSED.exec(l);
-    if (m !== null) last = m[1];
+    if (m !== null) last = { date: m[1], note: (m[2] ?? "").trim() };
   }
   return last;
+}
+
+/** The date of the last closing line, or null. */
+export function lastClosedOn(content: string): string | null {
+  return lastClose(content)?.date ?? null;
 }

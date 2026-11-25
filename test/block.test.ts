@@ -5,7 +5,7 @@ import type { ThreadRecord } from "../src/core/thread.ts";
 
 const base: ThreadRecord = {
   path: "p", title: "t", person: "Marc", status: "open",
-  due: null, followUp: null, created: null, closedOn: null,
+  due: null, followUp: null, created: null, closedOn: null, closedNote: "",
 };
 const today = "2026-11-20";
 

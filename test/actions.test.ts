@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkIn, createThread, DEFAULT_FOLDER, editThread, setField, type ThreadValues } from "../src/actions.ts";
+import { checkIn, closeThread, createThread, DEFAULT_FOLDER, editThread, setField, type ThreadValues } from "../src/actions.ts";
 import type { NewThread } from "../src/core/thread.ts";
 import { FakeStore } from "./fake-store.ts";
 
@@ -122,4 +122,21 @@ test("editThread allows a change of case only", async () => {
 test("editThread refuses an empty title or person", async () => {
   await assert.rejects(editThread(seed(), "Threads/API.md", before, { ...before, title: " / " }, t), /Title is empty/);
   await assert.rejects(editThread(seed(), "Threads/API.md", before, { ...before, person: "" }, t), /Pick a person/);
+});
+
+test("closeThread closes and logs the optional note, once", async () => {
+  const s = new FakeStore();
+  s.put("x", { type: "thread", status: "open" }, "## Log\n");
+  assert.equal(await closeThread(s, "x", " sent \n the slides ", "2026-11-25"), true);
+  assert.equal(s.files.get("x")!.fm!.status, "closed");
+  assert.equal(s.files.get("x")!.body, "## Log\n- 2026-11-25 · closed · sent the slides\n");
+  assert.equal(await closeThread(s, "x", "again", "2026-11-26"), false);
+  assert.equal(s.files.get("x")!.body, "## Log\n- 2026-11-25 · closed · sent the slides\n");
+});
+
+test("closeThread with no note logs a plain close", async () => {
+  const s = new FakeStore();
+  s.put("x", { type: "thread" }, "## Log\n");
+  await closeThread(s, "x", "", "2026-11-25");
+  assert.equal(s.files.get("x")!.body, "## Log\n- 2026-11-25 · closed\n");
 });

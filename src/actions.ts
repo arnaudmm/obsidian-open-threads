@@ -1,8 +1,9 @@
 // Every write the plugin makes, written against a small Store port so the
 // logic runs in Node tests. The Obsidian side implements Store in store.ts.
-import { appendLogLine, changeLine, checkInLine, type Field } from "./core/log.ts";
+import { appendLogLine, changeLine, checkInLine, closeLine, type Field } from "./core/log.ts";
 import {
   personLink,
+  readStatus,
   readThread,
   renderThreadNote,
   replaceDescription,
@@ -79,6 +80,19 @@ export async function setField(store: Store, path: string, field: Field, value: 
   });
   if (!changed) return false;
   await store.editContent(path, (c) => appendLogLine(c, changeLine(today, field, from, value)));
+  return true;
+}
+
+/** Close an open thread, logging the optional note. False when it was already closed. */
+export async function closeThread(store: Store, path: string, note: string, today: string): Promise<boolean> {
+  let changed = false;
+  await store.editFrontmatter(path, (fm) => {
+    if (readStatus(fm.status) === "closed") return;
+    fm.status = "closed";
+    changed = true;
+  });
+  if (!changed) return false;
+  await store.editContent(path, (c) => appendLogLine(c, closeLine(today, note)));
   return true;
 }
 
